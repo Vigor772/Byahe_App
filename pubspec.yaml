@@ -23,7 +23,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+  firebase_core: "^0.7.0"
+  firebase_auth: "^0.20.0+1"
+  google_sign_in: "^4.5.1"
+  firebase_analytics: "^5.0.2"
+  cloud_firestore: "^0.16.0"
+  provider: ^4.3.3
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -64,10 +69,6 @@ flutter:
     - family: Thasadith
       fonts:
         - asset: fonts/Thasadith-Bold.ttf
-
-    - family: DancingScript
-      fonts:
-        - asset: fonts/DancingScript-Regular.ttf
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
