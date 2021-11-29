@@ -1,18 +1,14 @@
-<<<<<<< HEAD
 import 'package:byahe_app/pages/commuter/locationselection.dart';
-import 'package:byahe_app/pages/register/registerdriver.dart';
-import 'package:byahe_app/pages/register/registerdriverconfirmation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:byahe_app/pages/login/loginpage.dart';
-import 'package:byahe_app/pages/register/registerpage.dart';
-import 'package:byahe_app/pages/register/registercommuternickname.dart';
-import 'package:byahe_app/pages/register/registercommuter.dart';
-import 'package:byahe_app/pages/commuter/routeselection.dart';
-import 'package:byahe_app/pages/commuter/reservevehicle.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:byahe_app/pages/login_auth.dart';
+import 'package:location/location.dart';
 import 'package:provider/provider.dart';
+import 'package:byahe_app/pages/driver/onboard.dart';
+import 'package:byahe_app/pages/register/registerdriver.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,25 +19,10 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   // const MyApp({ Key? key }) : super(key: key);
+  static bool alley = false;
+  static bool ping = false;
 
   @override
-  /*Widget build(BuildContext context) {
-    return MaterialApp(
-      initialRoute: '/loginpage',
-      routes: {
-        '/loginpage': (context) => LoginPage(),
-        '/register': (context) => RegisterPage(),
-        '/registercommuter': (context) => RegisterCommuter(),
-        '/registercommuternickname': (context) => RegisterCommuterNickname(),
-        '/registerdriver': (context) => RegisterDriver(),
-        '/registerdriverconfirmation': (context) =>
-            RegisterDriverConfirmation(),
-        '/locationselection': (context) => LocationSelection(),
-        '/routeselection': (context) => RouteSelection(),
-        '/reservevehicle': (context) => ReserveVehicle()
-      },
-    );
-  }*/
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
@@ -54,94 +35,40 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'BYAHE',
-        home: Verify(),
+        home: VerifySession(),
       ),
     );
   }
 }
 
-class Verify extends StatelessWidget {
+class VerifySession extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    //FirebaseAuth.instance.signOut();
     final user = context.watch<User>();
 
     if (user != null) {
-      return LocationSelection();
+      currUser(user);
     }
     return LoginPage();
   }
 }
-=======
-import 'package:byahe_app/pages/commuter/locationselection.dart';
-import 'package:byahe_app/pages/register/registerdriver.dart';
-import 'package:byahe_app/pages/register/registerdriverconfirmation.dart';
-import 'package:flutter/material.dart';
-import 'package:byahe_app/pages/login/loginpage.dart';
-import 'package:byahe_app/pages/register/registerpage.dart';
-import 'package:byahe_app/pages/register/registercommuternickname.dart';
-import 'package:byahe_app/pages/register/registercommuter.dart';
-import 'package:byahe_app/pages/commuter/routeselection.dart';
-import 'package:byahe_app/pages/commuter/reservevehicle.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:byahe_app/pages/login_auth.dart';
-import 'package:provider/provider.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  await Firebase.initializeApp();
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  // const MyApp({ Key? key }) : super(key: key);
-
-  @override
-  /*Widget build(BuildContext context) {
-    return MaterialApp(
-      initialRoute: '/loginpage',
-      routes: {
-        '/loginpage': (context) => LoginPage(),
-        '/register': (context) => RegisterPage(),
-        '/registercommuter': (context) => RegisterCommuter(),
-        '/registercommuternickname': (context) => RegisterCommuterNickname(),
-        '/registerdriver': (context) => RegisterDriver(),
-        '/registerdriverconfirmation': (context) =>
-            RegisterDriverConfirmation(),
-        '/locationselection': (context) => LocationSelection(),
-        '/routeselection': (context) => RouteSelection(),
-        '/reservevehicle': (context) => ReserveVehicle()
-      },
-    );
-  }*/
-  Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        Provider<Authenticate>(
-          create: (_) => Authenticate(FirebaseAuth.instance),
-        ),
-        StreamProvider(
-          create: (context) => context.read<Authenticate>().authStateChanges,
-        ),
-      ],
-      child: MaterialApp(
-        title: 'BYAHE',
-        home: Verify(),
-      ),
-    );
-  }
-}
-
-class Verify extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final user = context.watch<User>();
-
-    if (user != null) {
-      return LocationSelection();
+Future<User> currUser(user) async {
+  await FirebaseFirestore.instance
+      .collection("users")
+      .doc(user.uid)
+      .get()
+      .then((DocumentSnapshot<Map> item) async {
+    Map<String, dynamic> activeuser = item.data();
+    final value = activeuser['user_type'];
+    if (value != null) {
+      if (value == "Driver") {
+        return Onboard();
+      } else {
+        return LocationSelection();
+      }
     }
-    return LoginPage();
-  }
+  });
+  return null;
 }
->>>>>>> a122225eab9ed4383b1d42fd563083f0ac68eab1

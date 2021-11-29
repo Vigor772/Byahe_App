@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import 'package:flutter/material.dart';
 
 class PercentIndicator extends StatelessWidget {
@@ -62,68 +61,3 @@ class PercentIndicator extends StatelessWidget {
     ]);
   }
 }
-=======
-import 'package:flutter/material.dart';
-
-class PercentIndicator extends StatelessWidget {
-  final int status;
-
-  PercentIndicator(this.status);
-
-  Color turnGreen(pos) {
-    if (status >= pos) {
-      if (status <= 2) {
-        return Colors.green;
-      } else if (status == 3 || status == 4) {
-        return Colors.yellow;
-      } else if (status > 4) {
-        return Colors.red;
-      }
-    } else {
-      return Colors.white;
-    }
-    return null;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(children: <Widget>[
-      Container(
-        margin: EdgeInsets.symmetric(horizontal: 1),
-        child: CircleAvatar(
-          backgroundColor: turnGreen(1),
-          radius: 5,
-        ),
-      ),
-      Container(
-        margin: EdgeInsets.symmetric(horizontal: 1),
-        child: CircleAvatar(
-          backgroundColor: turnGreen(2),
-          radius: 5,
-        ),
-      ),
-      Container(
-        margin: EdgeInsets.symmetric(horizontal: 1),
-        child: CircleAvatar(
-          backgroundColor: turnGreen(3),
-          radius: 5,
-        ),
-      ),
-      Container(
-        margin: EdgeInsets.symmetric(horizontal: 1),
-        child: CircleAvatar(
-          backgroundColor: turnGreen(4),
-          radius: 5,
-        ),
-      ),
-      Container(
-        margin: EdgeInsets.symmetric(horizontal: 1),
-        child: CircleAvatar(
-          backgroundColor: turnGreen(5),
-          radius: 5,
-        ),
-      )
-    ]);
-  }
-}
->>>>>>> a122225eab9ed4383b1d42fd563083f0ac68eab1
