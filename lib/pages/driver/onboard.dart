@@ -15,6 +15,7 @@ class Onboard extends StatefulWidget {
 class _OnboardState extends State<Onboard> {
   int jeepcapacity = 12;
 
+  // ignore: missing_return
   Color checkVacant(int occupy) {
     double low = jeepcapacity * 0.5;
     double mid = jeepcapacity * 0.8;

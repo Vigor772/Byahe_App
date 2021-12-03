@@ -5,6 +5,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:byahe_app/widgets/topbarmod.dart';
 import 'package:byahe_app/widgets/driver/navigationalcontainer.dart';
+import 'package:byahe_app/pages/login_auth.dart';
+import 'package:provider/src/provider.dart';
 
 class SetupAlley extends StatefulWidget {
   // const SetupAlley({ Key? key }) : super(key: key);
@@ -17,6 +19,7 @@ class _SetupAlleyState extends State<SetupAlley> {
   String pageName = 'Set-up';
   String groupname = 'MODA JEEP ORG';
   String myPlatenumber = 'KMJS 000';
+  String status;
 
   Container alleyFunction() {
     if (MyApp.alley == false) {
@@ -117,12 +120,18 @@ class _SetupAlleyState extends State<SetupAlley> {
                           if (map['vehicle_plate_number'] ==
                               this.myPlatenumber) {
                             alleyDrivers.remove(map);
+                            context
+                                .read<Authenticate>()
+                                .updateVehicleStatus(status = 'DRIVING');
                             break;
                           }
                         }
                       } else {
                         alleyDrivers
                             .add({'vehicle_plate_number': this.myPlatenumber});
+                        context
+                            .read<Authenticate>()
+                            .updateVehicleStatus(status = 'ALLEY');
                       }
                       setState(() {
                         MyApp.alley = !MyApp.alley;

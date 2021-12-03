@@ -5,10 +5,8 @@ import 'package:byahe_app/pages/login/loginpage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:byahe_app/pages/login_auth.dart';
-import 'package:location/location.dart';
 import 'package:provider/provider.dart';
 import 'package:byahe_app/pages/driver/onboard.dart';
-import 'package:byahe_app/pages/register/registerdriver.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,31 +42,13 @@ class MyApp extends StatelessWidget {
 class VerifySession extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    //FirebaseAuth.instance.signOut();
+    //var currentUser = FirebaseAuth.instance.currentUser;
     final user = context.watch<User>();
 
     if (user != null) {
-      currUser(user);
+      return LocationSelection();
+      //return Onboard();
     }
     return LoginPage();
   }
-}
-
-Future<User> currUser(user) async {
-  await FirebaseFirestore.instance
-      .collection("users")
-      .doc(user.uid)
-      .get()
-      .then((DocumentSnapshot<Map> item) async {
-    Map<String, dynamic> activeuser = item.data();
-    final value = activeuser['user_type'];
-    if (value != null) {
-      if (value == "Driver") {
-        return Onboard();
-      } else {
-        return LocationSelection();
-      }
-    }
-  });
-  return null;
 }

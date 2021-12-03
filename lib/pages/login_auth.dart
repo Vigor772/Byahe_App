@@ -1,7 +1,8 @@
-// ignore_for_file: await_only_futures
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:byahe_app/pages/driver/onboard.dart';
+import 'package:byahe_app/pages/commuter/locationselection.dart';
+import 'package:flutter/widgets.dart';
 
 class Authenticate {
   final FirebaseAuth _auth;
@@ -50,6 +51,7 @@ class Authenticate {
     String mobnum;
     String platenum;
     String userType;
+    String vehicle_status;
     try {
       await _auth
           .createUserWithEmailAndPassword(email: email, password: password)
@@ -67,6 +69,7 @@ class Authenticate {
           'jeepney_route': jeeproute,
           'mobile_number': mobnum,
           'vehicle_plate_number': platenum,
+          'vehicle_status': vehicle_status,
         });
       });
       return "Successfully Signed In";
@@ -76,28 +79,28 @@ class Authenticate {
     }
   }
 
-  Future getCurrentUser() async {
-    return await FirebaseAuth.instance.currentUser;
-  }
-
-  Future getCurrentUid() async {
-    return await FirebaseAuth.instance.currentUser.uid;
-  }
-
-  Future userType(String curruser) async {
-    try {
-      User user = FirebaseAuth.instance.currentUser;
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get()
-          .then((DocumentSnapshot item) {
-        Map<String, dynamic> curruser = item.data();
-        return curruser['user_type'];
-      });
-    } catch (error) {
-      print(error.toString());
-      return null;
+  Future retrieveUsertype(Widget onboard, Widget location) async {
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    DocumentSnapshot usercat =
+        await FirebaseFirestore.instance.collection('users').doc(useruid).get();
+    if (usercat['user_type'] == "Driver") {
+      return onboard;
+    } else if (usercat['user_type'] == "Commuter") {
+      return location;
     }
+  }
+
+  Future updateVehicleStatus(String status) {
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(useruid)
+        .update({'vehicle_status': status})
+        .then((value) => print('Status updated'))
+        .catchError((onError) => print('Failed to update status: $onError'));
+  }
+
+  Future getCurrentUser() async {
+    return FirebaseAuth.instance.currentUser;
   }
 }
