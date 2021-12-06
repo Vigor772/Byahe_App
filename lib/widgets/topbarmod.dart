@@ -1,9 +1,8 @@
 import 'package:byahe_app/main.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:byahe_app/pages/driver/onboard.dart';
 import 'package:byahe_app/pages/login_auth.dart';
+// ignore: implementation_imports
 import 'package:provider/src/provider.dart';
 
 class TopBarMod extends StatelessWidget {
@@ -60,6 +59,8 @@ class TopBarMod extends StatelessWidget {
                         );
                       });
                 } else {
+                  String status = "OFFLINE";
+                  context.read<Authenticate>().updateUserStatus(status);
                   FirebaseAuth.instance.signOut();
                   Navigator.pop(context);
                 }

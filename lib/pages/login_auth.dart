@@ -103,4 +103,34 @@ class Authenticate {
   Future getCurrentUser() async {
     return FirebaseAuth.instance.currentUser;
   }
+
+  Future updateUserStatus(String status) {
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(useruid)
+        .update({'status': status})
+        .then((value) => print('User now online'))
+        .catchError((onError) => print('Failed to update status: $onError'));
+  }
+
+  Future getLocationList() async {
+    List locationList = [];
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('locations')
+          .get()
+          .then((query) {
+        query.docs.forEach((doc) {
+          locationList.add(doc.data());
+          print(locationList);
+        });
+      });
+      return locationList;
+    } catch (e) {
+      print(e.toString());
+      return null;
+    }
+  }
 }

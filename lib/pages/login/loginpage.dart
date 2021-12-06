@@ -73,8 +73,8 @@ class _LoginPageState extends State<LoginPage> {
                     padding: EdgeInsets.fromLTRB(15, 0, 15, 15),
                     child: ElevatedButton(
                       onPressed: () {
-                        final String email = userController.text.trim();
-                        final String password = passwordController.text.trim();
+                        var email = userController.text.trim();
+                        var password = passwordController.text.trim();
 
                         if (email.isEmpty) {
                           return ("User Email is Empty");
@@ -86,6 +86,8 @@ class _LoginPageState extends State<LoginPage> {
                                   email,
                                   password,
                                 );
+                            userController.clear();
+                            passwordController.clear();
                           }
                         }
                       },

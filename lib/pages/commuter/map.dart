@@ -10,9 +10,7 @@ import 'package:byahe_app/widgets/topbarmod.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
-import 'package:byahe_app/pages/login_auth.dart';
 // ignore: implementation_imports
-import 'package:provider/src/provider.dart';
 
 class Map extends StatefulWidget {
   var route;
@@ -394,7 +392,7 @@ class _MapState extends State<Map> {
                       ),
                     )))));
           }
-          return CircularProgressIndicator();
+          return CircularProgressIndicator.adaptive();
         });
   }
 }

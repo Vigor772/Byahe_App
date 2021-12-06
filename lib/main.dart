@@ -43,11 +43,11 @@ class VerifySession extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     //var currentUser = FirebaseAuth.instance.currentUser;
+    String status = "ONLINE";
     final user = context.watch<User>();
-
     if (user != null) {
+      context.read<Authenticate>().updateUserStatus(status);
       return LocationSelection();
-      //return Onboard();
     }
     return LoginPage();
   }

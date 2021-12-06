@@ -1,6 +1,10 @@
 import 'package:byahe_app/pages/commuter/routeselection.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:byahe_app/widgets/topbarmod.dart';
+import 'package:byahe_app/pages/login_auth.dart';
+// ignore: implementation_imports
+import 'package:provider/src/provider.dart';
 
 class LocationSelection extends StatefulWidget {
   // const LocationSelection({ Key? key }) : super(key: key);
@@ -11,12 +15,31 @@ class LocationSelection extends StatefulWidget {
 
 class _LocationSelectionState extends State<LocationSelection> {
   final myController = TextEditingController();
+  List locationList = [];
 
   @override
+  void initState() {
+    super.initState();
+    fetchLocationList();
+  }
+
   void dispose() {
     // Clean up the controller when the widget is disposed.
     myController.dispose();
     super.dispose();
+  }
+
+  fetchLocationList() async {
+    dynamic results = await context.read<Authenticate>().getLocationList();
+
+    if (results == null) {
+      print('Unable to retrieve data');
+    } else {
+      setState(() {
+        locationList = results;
+        print(locationList);
+      });
+    }
   }
 
   // ignore: missing_return
@@ -85,10 +108,31 @@ class _LocationSelectionState extends State<LocationSelection> {
             ),
           ),
           Container(
-            padding: EdgeInsets.only(top: 10),
-            child: Column(
-                children: locationStatus
-                    .map((location) => Container(
+              //color: Colors.yellow[700],
+              padding: EdgeInsets.only(top: 10),
+              child: ListView.builder(
+                  scrollDirection: Axis.vertical,
+                  shrinkWrap: true,
+                  itemCount: locationList.length,
+                  itemBuilder: (context, index) {
+                    return Card(
+                        color: Colors.yellow[700],
+                        child: ListTile(
+                          title: Text(locationList[index]['jeep_line'],
+                              style: TextStyle(color: Colors.white)),
+                          subtitle: Text(locationList[index]['location_id'],
+                              style: TextStyle(color: Colors.white)),
+                        ));
+                  }))
+        ],
+      ),
+    ))));
+  }
+
+  /*Column(
+                children: locationList
+                    // ignore: non_constant_identifier_names
+                    .map((location_id) => Container(
                         color: Colors.yellow[700],
                         padding: EdgeInsets.all(20),
                         child: InkWell(
@@ -101,19 +145,14 @@ class _LocationSelectionState extends State<LocationSelection> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: <Widget>[
                                 Container(
-                                  child: Text(location['location'],
+                                  child: Text(location_id['jeep_line'],
                                       style: TextStyle(color: Colors.white)),
                                 ),
-                                Container(
-                                  child:
-                                      locationStatusLayout(location['status']),
-                                )
+                                /*Container(
+                        child: locationStatusLayout(
+                          location['status']),
+                  )*/
                               ],
                             ))))
-                    .toList()),
-          )
-        ],
-      ),
-    ))));
-  }
+                    .toList()),*/
 }
