@@ -60,8 +60,8 @@ class TopBarMod extends StatelessWidget {
                       });
                 } else {
                   String status = "OFFLINE";
-                  context.read<Authenticate>().updateUserStatus(status);
                   FirebaseAuth.instance.signOut();
+                  context.read<Authenticate>().updateUserStatus(status);
                   Navigator.pop(context);
                 }
                 // Navigator.pop(context);
