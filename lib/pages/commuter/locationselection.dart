@@ -7,7 +7,7 @@ import 'package:byahe_app/pages/login_auth.dart';
 import 'package:provider/src/provider.dart';
 
 class LocationSelection extends StatefulWidget {
-  // const LocationSelection({ Key? key }) : super(key: key);
+  //const LocationSelection({ Key key }) : super(key: key);
 
   @override
   _LocationSelectionState createState() => _LocationSelectionState();
@@ -19,8 +19,8 @@ class _LocationSelectionState extends State<LocationSelection> {
 
   @override
   void initState() {
-    super.initState();
     fetchLocationList();
+    super.initState();
   }
 
   void dispose() {
@@ -118,6 +118,13 @@ class _LocationSelectionState extends State<LocationSelection> {
                     return Card(
                         color: Colors.yellow[700],
                         child: ListTile(
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => RouteSelection(
+                                        locationList[index]['jeep_line'])));
+                          },
                           title: Text(locationList[index]['jeep_line'],
                               style: TextStyle(color: Colors.white)),
                           subtitle: Text(locationList[index]['location_id'],

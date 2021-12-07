@@ -124,10 +124,29 @@ class Authenticate {
           .then((query) {
         query.docs.forEach((doc) {
           locationList.add(doc.data());
-          print(locationList);
         });
       });
       return locationList;
+    } catch (e) {
+      print(e.toString());
+      return null;
+    }
+  }
+
+  Future getRouteListDetails() async {
+    List routeList = [];
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .where('user_type', isEqualTo: 'Driver')
+          .get()
+          .then((query) {
+        query.docs.forEach((doc) {
+          routeList.add(doc.data());
+        });
+      });
+      return routeList;
     } catch (e) {
       print(e.toString());
       return null;
