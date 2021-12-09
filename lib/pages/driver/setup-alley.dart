@@ -1,12 +1,17 @@
+import 'dart:async';
 import 'package:byahe_app/data/data.dart';
 import 'package:byahe_app/main.dart';
 import 'package:byahe_app/pages/driver/setup-check.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:byahe_app/widgets/topbarmod.dart';
 import 'package:byahe_app/widgets/driver/navigationalcontainer.dart';
 import 'package:byahe_app/pages/login_auth.dart';
 import 'package:provider/src/provider.dart';
+import 'package:location/location.dart' as locate;
+import 'package:permission_handler/permission_handler.dart';
 
 class SetupAlley extends StatefulWidget {
   // const SetupAlley({ Key? key }) : super(key: key);
@@ -20,6 +25,17 @@ class _SetupAlleyState extends State<SetupAlley> {
   String groupname = 'MODA JEEP ORG';
   String myPlatenumber = 'KMJS 000';
   String status;
+  final locate.Location location = locate.Location();
+  StreamSubscription<locate.LocationData> _locationSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    requestForPerms();
+    location.changeSettings(
+        interval: 300, accuracy: locate.LocationAccuracy.high);
+    location.enableBackgroundMode(enable: true);
+  }
 
   Container alleyFunction() {
     if (MyApp.alley == false) {
@@ -38,7 +54,50 @@ class _SetupAlleyState extends State<SetupAlley> {
             border: Border.all(width: 2.0, color: Colors.redAccent),
             color: Colors.redAccent,
             borderRadius: BorderRadius.all(Radius.circular(5))),
-        child: Text('CANCEL NOW !', style: TextStyle(color: Colors.white)),
+        child: Text('CANCEL NOW!', style: TextStyle(color: Colors.white)),
+      );
+    }
+  }
+
+  Container broadcastLocation() {
+    if (MyApp.broadcast == false) {
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+        decoration: BoxDecoration(
+            border: Border.all(width: 2.0, color: Colors.yellow[700]),
+            color: Colors.white,
+            borderRadius: BorderRadius.all(Radius.circular(5))),
+        child: Row(
+          children: <Widget>[
+            Container(
+              child: Icon(Icons.place),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: Text('BROADCAST',
+                  style: TextStyle(color: Colors.yellow[700])),
+            )
+          ],
+        ),
+      );
+    } else {
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+        decoration: BoxDecoration(
+            border: Border.all(width: 2.0, color: Colors.yellow[700]),
+            color: Colors.white,
+            borderRadius: BorderRadius.all(Radius.circular(5))),
+        child: Row(
+          children: <Widget>[
+            Container(
+              child: Icon(Icons.place),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: Text('STOP', style: TextStyle(color: Colors.yellow[700])),
+            )
+          ],
+        ),
       );
     }
   }
@@ -98,21 +157,18 @@ class _SetupAlleyState extends State<SetupAlley> {
           child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Container(
-                      child: Image.asset(
-                        'assets/add-group.png',
-                        width: 30,
-                      ),
-                    ),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      child: Text(this.groupname,
-                          style: TextStyle(color: Colors.yellow[700])),
-                    )
-                  ],
-                ),
+                InkWell(
+                    onTap: () {
+                      if (MyApp.broadcast == true) {
+                        stopLiveLocation();
+                      } else {
+                        getLiveLocation();
+                      }
+                      setState(() {
+                        MyApp.broadcast = !MyApp.broadcast;
+                      });
+                    },
+                    child: broadcastLocation()),
                 InkWell(
                     onTap: () {
                       if (MyApp.alley == true) {
@@ -177,5 +233,39 @@ class _SetupAlleyState extends State<SetupAlley> {
                 .toList()),
       )
     ])))));
+  }
+
+  Future<void> getLiveLocation() async {
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    _locationSubscription = location.onLocationChanged.handleError((onError) {
+      print(onError.toString());
+      _locationSubscription?.cancel();
+      setState(() {
+        _locationSubscription = null;
+      });
+    }).listen((locate.LocationData currentLocation) async {
+      await FirebaseFirestore.instance.collection('users').doc(useruid).set({
+        'latitude': currentLocation.latitude,
+        'longitude': currentLocation.longitude,
+      }, SetOptions(merge: true));
+    });
+  }
+
+  stopLiveLocation() async {
+    _locationSubscription?.cancel();
+    setState(() {
+      _locationSubscription = null;
+    });
+  }
+
+  requestForPerms() async {
+    var status = await Permission.location.request();
+    if (status.isGranted) {
+      print('Request granted');
+    } else if (status.isDenied) {
+      requestForPerms();
+    } else if (status.isPermanentlyDenied) {
+      openAppSettings();
+    }
   }
 }

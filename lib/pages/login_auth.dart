@@ -1,7 +1,8 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:byahe_app/pages/driver/onboard.dart';
-import 'package:byahe_app/pages/commuter/locationselection.dart';
+//import 'package:byahe_app/pages/driver/onboard.dart';
+//import 'package:byahe_app/pages/commuter/locationselection.dart';
 import 'package:flutter/widgets.dart';
 
 class Authenticate {
@@ -79,15 +80,13 @@ class Authenticate {
     }
   }
 
-  Future retrieveUsertype(Widget onboard, Widget location) async {
+  Future retrieveUsertype() async {
+    String usertype;
     String useruid = FirebaseAuth.instance.currentUser.uid;
     DocumentSnapshot usercat =
         await FirebaseFirestore.instance.collection('users').doc(useruid).get();
-    if (usercat['user_type'] == "Driver") {
-      return onboard;
-    } else if (usercat['user_type'] == "Commuter") {
-      return location;
-    }
+    usertype = usercat['user_type'];
+    return usertype;
   }
 
   Future updateVehicleStatus(String status) {
@@ -151,5 +150,15 @@ class Authenticate {
       print(e.toString());
       return null;
     }
+  }
+
+  Future updateQueueStatus(bool status) {
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(useruid)
+        .update({'queue': status})
+        .then((value) => print('Queue status updated'))
+        .catchError((onError) => print('Failed to update status: $onError'));
   }
 }

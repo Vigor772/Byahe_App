@@ -37,7 +37,6 @@ class _LocationSelectionState extends State<LocationSelection> {
     } else {
       setState(() {
         locationList = results;
-        print(locationList);
       });
     }
   }

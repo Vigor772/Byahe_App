@@ -19,6 +19,8 @@ class MyApp extends StatelessWidget {
   // const MyApp({ Key? key }) : super(key: key);
   static bool alley = false;
   static bool ping = false;
+  static bool broadcast = false;
+  static bool inboard = false;
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +50,7 @@ class VerifySession extends StatelessWidget {
     if (user != null) {
       context.read<Authenticate>().updateUserStatus(status);
       return LocationSelection();
+      //return Onboard();
     }
     return LoginPage();
   }
