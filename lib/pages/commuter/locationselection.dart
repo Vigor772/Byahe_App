@@ -42,7 +42,7 @@ class _LocationSelectionState extends State<LocationSelection> {
   }
 
   // ignore: missing_return
-  Widget locationStatusLayout(String status) {
+  /*Widget locationStatusLayout(String status) {
     switch (status) {
       case "LOW":
         {
@@ -71,13 +71,13 @@ class _LocationSelectionState extends State<LocationSelection> {
         }
         break;
     }
-  }
+  }*/
 
-  var locationStatus = [
+  /*var locationStatus = [
     {'location': 'Gusa', 'status': 'HIGH'},
     {'location': 'Cugman', 'status': 'LOW'},
     {'location': 'Lapasan', 'status': 'MEDIUM'},
-  ];
+  ];*/
 
   @override
   Widget build(BuildContext context) {

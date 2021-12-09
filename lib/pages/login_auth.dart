@@ -99,10 +99,6 @@ class Authenticate {
         .catchError((onError) => print('Failed to update status: $onError'));
   }
 
-  Future getCurrentUser() async {
-    return FirebaseAuth.instance.currentUser;
-  }
-
   Future updateUserStatus(String status) {
     String useruid = FirebaseAuth.instance.currentUser.uid;
     return FirebaseFirestore.instance
@@ -150,6 +146,36 @@ class Authenticate {
       print(e.toString());
       return null;
     }
+  }
+
+  Future getLat() async {
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    var latitude;
+    DocumentSnapshot usercat =
+        await FirebaseFirestore.instance.collection('users').doc(useruid).get();
+
+    latitude = usercat['latitude'];
+    return latitude;
+  }
+
+  Future getLong() async {
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    var longitude;
+    DocumentSnapshot usercat =
+        await FirebaseFirestore.instance.collection('users').doc(useruid).get();
+
+    longitude = usercat['longitude'];
+    return longitude;
+  }
+
+  Future getEmail() async {
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    var email;
+    DocumentSnapshot usercat =
+        await FirebaseFirestore.instance.collection('users').doc(useruid).get();
+
+    email = usercat['email'];
+    return email;
   }
 
   Future updateQueueStatus(bool status) {

@@ -1,23 +1,17 @@
-//import 'package:byahe_app/pages/commuter/locationselection.dart';
 import 'package:byahe_app/pages/login_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:byahe_app/widgets/topbarmod.dart';
-//import 'package:byahe_app/widgets/commuter/percentindicator.dart';
 import 'package:byahe_app/pages/commuter/map.dart';
 import 'package:flutter/rendering.dart';
-import 'package:byahe_app/data/data.dart';
 // ignore: implementation_imports
 import 'package:provider/src/provider.dart';
 import 'package:byahe_app/main.dart';
 
 // ignore: must_be_immutable
 class RouteSelection extends StatefulWidget {
-  /*const RouteSelection(locationList, {Key key, @required this.locationLists})
-      : super(key: key);*/
   var locationLists;
   RouteSelection(this.locationLists);
-  //RouteSelection(locationList, {locationLists});
   @override
   _RouteSelectionState createState() =>
       _RouteSelectionState(this.locationLists);
@@ -47,22 +41,13 @@ class _RouteSelectionState extends State<RouteSelection> {
     }
   }
 
-  /*_RouteSelectionState() {
-    locationRoute
-      ..sort((route1, route2) {
-        int status1 = route1['status'];
-        int status2 = route2['status'];
-        return status1.compareTo(status2);
-      });
-  }*/
-
-  void resetQueued() {
+  /*void resetQueued() {
     setState(() {
       locationRoute.map((route) {
         return route['queue'] = false;
       });
     });
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {

@@ -16,24 +16,28 @@ import 'package:provider/src/provider.dart';
 
 class Map extends StatefulWidget {
   var routeData;
-  var route;
+  //var route;
   Map(this.routeData);
   @override
-  _MapState createState() => _MapState(this.route, this.routeData);
+  _MapState createState() => _MapState(/*this.route,*/ this.routeData);
 }
 
 class _MapState extends State<Map> {
   String useruid = FirebaseAuth.instance.currentUser.uid;
   var route;
   var routeData;
-  _MapState(this.route, this.routeData);
+  var latitude;
+  var longitude;
+  var email;
+  List commuterData = [];
+  _MapState(/*this.route,*/ this.routeData);
   StreamSubscription _locationSubscription;
   Location _locationTracker = Location();
   GoogleMapController _controller;
   Marker marker;
   Marker marker2;
+  List<Marker> usersMarkers = [];
   Circle circle;
-  //Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
 
   Future<Uint8List> getMarker() async {
     ByteData byteData =
@@ -41,11 +45,11 @@ class _MapState extends State<Map> {
     return byteData.buffer.asUint8List();
   }
 
-  /*Future<Uint8List> getMarker2() async {
+  Future<Uint8List> getMarker2() async {
     ByteData byteData =
         await DefaultAssetBundle.of(context).load('assets/red_arrow.png');
     return byteData.buffer.asUint8List();
-  }*/
+  }
 
   void updateMarkerAndCircle(LocationData newLocalData,
       Uint8List imageData /*, Uint8List imageData2*/) {
@@ -108,6 +112,7 @@ class _MapState extends State<Map> {
                   tilt: 0,
                   zoom: 18)));
           updateMarkerAndCircle(newLocalData, imageData /*, imageData2*/);
+          usersMarkers.add(marker);
         }
       });
     } on PlatformException catch (e) {
@@ -118,11 +123,60 @@ class _MapState extends State<Map> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    fetchLat();
+    fetchLong();
+    fetchEmail();
+  }
+
   void dispose() {
     if (_locationSubscription != null) {
       _locationSubscription.cancel();
     }
     super.dispose();
+  }
+
+  fetchLat() async {
+    dynamic results = await context.read<Authenticate>().getLat();
+
+    if (results == null) {
+      print('Unable to retrieve commuter info');
+    } else {
+      if (mounted) {
+        setState(() {
+          latitude = results;
+        });
+      }
+    }
+  }
+
+  fetchLong() async {
+    dynamic results = await context.read<Authenticate>().getLong();
+
+    if (results == null) {
+      print('Unable to retrieve commuter info');
+    } else {
+      if (mounted) {
+        setState(() {
+          longitude = results;
+        });
+      }
+    }
+  }
+
+  fetchEmail() async {
+    dynamic results = await context.read<Authenticate>().getEmail();
+
+    if (results == null) {
+      print('Unable to retrieve commuter info');
+    } else {
+      if (mounted) {
+        setState(() {
+          email = results;
+        });
+      }
+    }
   }
 
   @override
@@ -168,9 +222,7 @@ class _MapState extends State<Map> {
                         initialCameraPosition: CameraPosition(
                             target: LatLng(
                                 routeData['latitude'], routeData['longitude'])),
-                        markers: Set.of((marker != null) /*& (marker2 != null)*/
-                            ? [marker /*, marker2*/]
-                            : []),
+                        markers: Set.of(usersMarkers),
                         circles: Set.of((circle != null) ? [circle] : []),
                         onMapCreated: (GoogleMapController controller) async {
                           _controller = controller;
@@ -316,9 +368,15 @@ class _MapState extends State<Map> {
                                       onPressed: () {
                                         var status = false;
                                         setState(() {
-                                          context
+                                          if (MyApp.ping == true) {
+                                            cancelPing();
+                                            context
+                                                .read<Authenticate>()
+                                                .updateQueueStatus(status);
+                                          }
+                                          /*context
                                               .read<Authenticate>()
-                                              .updateQueueStatus(status);
+                                              .updateQueueStatus(status);*/
                                           /*routeData['queue'] =
                                               !routeData['queue'];*/
                                           MyApp.ping = routeData['queue'];
@@ -342,12 +400,19 @@ class _MapState extends State<Map> {
                                         onPressed: () {
                                           setState(() {
                                             var status = true;
-                                            context
+                                            if (MyApp.ping == false) {
+                                              savePing();
+                                              getCoordinates();
+                                              context
+                                                  .read<Authenticate>()
+                                                  .updateQueueStatus(status);
+                                            }
+                                            /*context
                                                 .read<Authenticate>()
-                                                .updateQueueStatus(status);
-                                            /*routeData['queue'] =
-                                                !routeData['queue'];*/
-                                            MyApp.ping = routeData['queue'];
+                                                .updateQueueStatus(status);*/
+                                            setState(() {
+                                              MyApp.ping = routeData['queue'];
+                                            });
                                           });
                                         },
                                         style: ElevatedButton.styleFrom(
@@ -385,20 +450,37 @@ class _MapState extends State<Map> {
             )))));
   }
 
-  Future<void> pingCommuter() async {
+  savePing() async {
     String useruid = FirebaseAuth.instance.currentUser.uid;
-    _locationSubscription =
-        _locationTracker.onLocationChanged.handleError((onError) {
-      print(onError.toString());
-      _locationSubscription?.cancel();
-      setState(() {
-        _locationSubscription = null;
-      });
-    }).listen((LocationData currentLocation) async {
+    try {
+      final LocationData currentLocation = await _locationTracker.getLocation();
       await FirebaseFirestore.instance.collection('users').doc(useruid).set({
         'latitude': currentLocation.latitude,
         'longitude': currentLocation.longitude,
       }, SetOptions(merge: true));
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  getCoordinates() async {
+    Uint8List imageData2 = await getMarker2();
+    setState(() {
+      usersMarkers.add(Marker(
+          markerId: MarkerId(email),
+          position: LatLng(latitude, longitude),
+          infoWindow: InfoWindow(
+            title: '$email pinged',
+          ),
+          icon: BitmapDescriptor.fromBytes(imageData2)));
+    });
+  }
+
+  cancelPing() {
+    Marker mark = usersMarkers
+        .firstWhere((mark) => mark.markerId.value == email, orElse: () => null);
+    setState(() {
+      usersMarkers.remove(mark);
     });
   }
 }
