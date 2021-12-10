@@ -24,6 +24,7 @@ class Authenticate {
 
   Future<String> signupCommuter(String email, String password) async {
     String userType;
+    String name;
     try {
       await _auth
           .createUserWithEmailAndPassword(email: email, password: password)
@@ -32,6 +33,7 @@ class Authenticate {
 
         await FirebaseFirestore.instance.collection("users").doc(user.uid).set({
           "uid": user.uid,
+          'full_name': name,
           "user_type": userType,
           "email": email,
           "password": password,
@@ -42,6 +44,23 @@ class Authenticate {
       print(error.toString());
       return null;
     }
+  }
+
+  Future<String> bookings(vehicle_plate, fname, lname, gender, address, number,
+      numpass, date) async {
+    String status = 'Pending';
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    await FirebaseFirestore.instance.collection('bookings').doc(useruid).set({
+      'status': status,
+      'plate_reference': vehicle_plate,
+      "customer name": fname + lname,
+      'gender': gender,
+      'address': address,
+      'contact_number': number,
+      'number_of_passengers': numpass,
+      'date_to_reserve': date,
+    });
+    return 'Successfully Booked';
   }
 
   Future<String> signupDriver(String email, String password) async {
@@ -77,6 +96,20 @@ class Authenticate {
     } catch (error) {
       print(error.toString());
       return null;
+    }
+  }
+
+  Future retrieveName() async {
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    String name;
+    DocumentSnapshot usercat =
+        await FirebaseFirestore.instance.collection('users').doc(useruid).get();
+    if (usercat['user_type'] == "Commuter") {
+      name = usercat['full_name'];
+      return name;
+    } else if (usercat['user_type'] == "Driver") {
+      name = usercat['first_name']; //+ usercat['last_name'];
+      return name;
     }
   }
 
@@ -128,6 +161,35 @@ class Authenticate {
     }
   }
 
+  // ignore: non_constant_identifier_names
+  Future getAlleyList(var route_path) async {
+    List alleyList = [];
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .where('route_path', isEqualTo: route_path)
+          .get()
+          .then((query) {
+        query.docs.forEach((doc) {
+          alleyList.add(doc.data());
+        });
+      });
+    } catch (e) {
+      print(e.toString());
+      return null;
+    }
+  }
+
+  Future getDriverRoutePath() async {
+    String driverRoute;
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    DocumentSnapshot usercat =
+        await FirebaseFirestore.instance.collection('users').doc(useruid).get();
+    driverRoute = usercat['route_path'];
+    return driverRoute;
+  }
+
   Future getRouteListDetails() async {
     List routeList = [];
 
@@ -158,6 +220,15 @@ class Authenticate {
     return latitude;
   }
 
+  Future getPlate() async {
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    var plate;
+    DocumentSnapshot usercat =
+        await FirebaseFirestore.instance.collection('users').doc(useruid).get();
+    plate = usercat['vehicle_plate_number'];
+    return plate;
+  }
+
   Future getLong() async {
     String useruid = FirebaseAuth.instance.currentUser.uid;
     var longitude;
@@ -185,6 +256,16 @@ class Authenticate {
         .doc(useruid)
         .update({'queue': status})
         .then((value) => print('Queue status updated'))
+        .catchError((onError) => print('Failed to update status: $onError'));
+  }
+
+  Future updateBroadCast(bool status) {
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(useruid)
+        .update({'broadcast': status})
+        .then((value) => print('Broadcast Status updated'))
         .catchError((onError) => print('Failed to update status: $onError'));
   }
 }

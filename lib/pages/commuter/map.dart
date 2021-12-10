@@ -14,23 +14,23 @@ import 'package:location/location.dart';
 import 'package:provider/src/provider.dart';
 // ignore: implementation_imports
 
+// ignore: must_be_immutable
 class Map extends StatefulWidget {
   var routeData;
-  //var route;
   Map(this.routeData);
   @override
-  _MapState createState() => _MapState(/*this.route,*/ this.routeData);
+  _MapState createState() => _MapState(this.routeData);
 }
 
 class _MapState extends State<Map> {
   String useruid = FirebaseAuth.instance.currentUser.uid;
-  var route;
   var routeData;
   var latitude;
   var longitude;
   var email;
+  var queueStatus;
   List commuterData = [];
-  _MapState(/*this.route,*/ this.routeData);
+  _MapState(this.routeData);
   StreamSubscription _locationSubscription;
   Location _locationTracker = Location();
   GoogleMapController _controller;
@@ -51,23 +51,12 @@ class _MapState extends State<Map> {
     return byteData.buffer.asUint8List();
   }
 
-  void updateMarkerAndCircle(LocationData newLocalData,
-      Uint8List imageData /*, Uint8List imageData2*/) {
+  void updateMarkerAndCircle(LocationData newLocalData, Uint8List imageData) {
     LatLng latlng = LatLng(newLocalData.latitude, newLocalData.longitude);
     LatLng driverLocation =
         LatLng(routeData['latitude'], routeData['longitude']);
-    //LatLng latlng2 = LatLng(8.473428, 124.607859);
     print(driverLocation);
     this.setState(() {
-      /*marker2 = Marker(
-          markerId: MarkerId("home2"),
-          position: latlng,
-          rotation: newLocalData.heading,
-          draggable: false,
-          zIndex: 2,
-          flat: true,
-          anchor: Offset(0.5, 0.5),
-          icon: BitmapDescriptor.fromBytes(imageData2));*/
       marker = Marker(
           markerId: MarkerId("home"),
           position: driverLocation,
@@ -87,15 +76,26 @@ class _MapState extends State<Map> {
     });
   }
 
-  static final CameraPosition initialLocation =
-      CameraPosition(target: LatLng(12.4155121, -123.4310376), zoom: 14.4746);
+  void updateMarkerCommuter(LocationData newLocalData, Uint8List imageData2) {
+    LatLng commuter = LatLng(latitude, longitude);
+    print(commuter);
+    this.setState(() {
+      marker2 = Marker(
+          markerId: MarkerId(email.toString()),
+          position: commuter,
+          rotation: newLocalData.heading,
+          infoWindow: InfoWindow(title: '$email pinged'),
+          draggable: false,
+          zIndex: 2,
+          flat: true,
+          anchor: Offset(0.5, 0.5),
+          icon: BitmapDescriptor.fromBytes(imageData2));
+    });
+  }
 
   void getCurrentLocation() async {
     try {
       Uint8List imageData = await getMarker();
-      /*Uint8List imageData2 = await getMarker2();*/
-      //var location = await _locationTracker.getLocation();
-      //updateMarkerAndCircle(location, imageData /*, imageData2*/);
 
       if (_locationSubscription != null) {
         _locationSubscription.cancel();
@@ -104,17 +104,33 @@ class _MapState extends State<Map> {
       _locationSubscription =
           _locationTracker.onLocationChanged.listen((newLocalData) {
         if (_controller != null) {
-          _controller
-              .animateCamera(CameraUpdate.newCameraPosition(new CameraPosition(
+          _controller.animateCamera(CameraUpdate.newCameraPosition(
+              new CameraPosition(
                   bearing: 192.345345345,
                   target: LatLng(routeData['latitude'], routeData['longitude']),
-                  //target: LatLng(8.473428, 124.607859),
                   tilt: 0,
                   zoom: 18)));
-          updateMarkerAndCircle(newLocalData, imageData /*, imageData2*/);
+          updateMarkerAndCircle(newLocalData, imageData);
           usersMarkers.add(marker);
         }
       });
+    } on PlatformException catch (e) {
+      if (e.code == 'PERMISSION_DENIED') {
+        debugPrint("Permission Denied");
+      }
+    }
+  }
+
+  void getCommuterLocation() async {
+    try {
+      Uint8List imageData2 = await getMarker2();
+      var location = await _locationTracker.getLocation();
+      updateMarkerCommuter(location, imageData2);
+
+      if (_locationSubscription != null) {
+        _locationSubscription.cancel();
+      }
+      usersMarkers.add(marker2);
     } on PlatformException catch (e) {
       if (e.code == 'PERMISSION_DENIED') {
         debugPrint("Permission Denied");
@@ -134,6 +150,7 @@ class _MapState extends State<Map> {
     if (_locationSubscription != null) {
       _locationSubscription.cancel();
     }
+    queueStatus.dispose();
     super.dispose();
   }
 
@@ -290,27 +307,6 @@ class _MapState extends State<Map> {
                                 ]))
                               ],
                             ),
-                            /*Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: <Widget>[
-                                  Container(
-                                      child: Row(children: <Widget>[
-                                    Text(
-                                      "Time to leave : ",
-                                      style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    Text(
-                                      "${route['time_to_leave']} mins/s left",
-                                      style: TextStyle(
-                                          fontSize: 10,
-                                          color: Colors.orange[700],
-                                          decoration: TextDecoration.underline,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ]))
-                                ]),*/
                             Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: <Widget>[
@@ -368,18 +364,17 @@ class _MapState extends State<Map> {
                                       onPressed: () {
                                         var status = false;
                                         setState(() {
-                                          if (MyApp.ping == true) {
-                                            cancelPing();
-                                            context
-                                                .read<Authenticate>()
-                                                .updateQueueStatus(status);
-                                          }
+                                          cancelPing();
+                                          context
+                                              .read<Authenticate>()
+                                              .updateQueueStatus(status);
+                                          MyApp.ping = routeData['queue'];
+
                                           /*context
                                               .read<Authenticate>()
                                               .updateQueueStatus(status);*/
-                                          /*routeData['queue'] =
-                                              !routeData['queue'];*/
-                                          MyApp.ping = routeData['queue'];
+                                          routeData['queue'] =
+                                              !routeData['queue'];
                                         });
                                       },
                                       style: ElevatedButton.styleFrom(
@@ -398,22 +393,38 @@ class _MapState extends State<Map> {
                                   children: <Widget>[
                                     ElevatedButton(
                                         onPressed: () {
-                                          setState(() {
-                                            var status = true;
-                                            if (MyApp.ping == false) {
+                                          if (routeData['user_type'] ==
+                                              "Driver") {
+                                            showDialog(
+                                                context: context,
+                                                builder: (context) {
+                                                  return AlertDialog(
+                                                    title: Text(
+                                                        "Driver can't ping"),
+                                                    content: Text(
+                                                        'This function is for commuters only'),
+                                                    actions: <Widget>[
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          Navigator.pop(
+                                                              context);
+                                                        },
+                                                        child: Text('CLOSE'),
+                                                      )
+                                                    ],
+                                                  );
+                                                });
+                                          } else {
+                                            setState(() {
+                                              var status = true;
                                               savePing();
-                                              getCoordinates();
+                                              getCommuterLocation();
                                               context
                                                   .read<Authenticate>()
                                                   .updateQueueStatus(status);
-                                            }
-                                            /*context
-                                                .read<Authenticate>()
-                                                .updateQueueStatus(status);*/
-                                            setState(() {
                                               MyApp.ping = routeData['queue'];
                                             });
-                                          });
+                                          }
                                         },
                                         style: ElevatedButton.styleFrom(
                                             primary: Colors.white,
@@ -427,11 +438,11 @@ class _MapState extends State<Map> {
                                         )),
                                     ElevatedButton(
                                         onPressed: () {
-                                          // Navigator.pushNamed(context, '/reservevehicle');
                                           Navigator.of(context).push(
                                               MaterialPageRoute(
                                                   builder: (context) =>
-                                                      ReserveVehicle()));
+                                                      ReserveVehicle(
+                                                          routeData)));
                                         },
                                         style: ElevatedButton.styleFrom(
                                             onPrimary: Colors.yellow[700],
@@ -463,7 +474,7 @@ class _MapState extends State<Map> {
     }
   }
 
-  getCoordinates() async {
+  /*getCoordinates() async {
     Uint8List imageData2 = await getMarker2();
     setState(() {
       usersMarkers.add(Marker(
@@ -474,7 +485,7 @@ class _MapState extends State<Map> {
           ),
           icon: BitmapDescriptor.fromBytes(imageData2)));
     });
-  }
+  }*/
 
   cancelPing() {
     Marker mark = usersMarkers

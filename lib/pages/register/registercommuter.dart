@@ -15,6 +15,7 @@ class RegisterCommuter extends StatefulWidget {
 class _RegisterCommuterState extends State<RegisterCommuter> {
   TextEditingController emailController = new TextEditingController();
   TextEditingController passwordController = new TextEditingController();
+  TextEditingController nameController = new TextEditingController();
   final String userType = "Commuter";
   @override
   Widget build(BuildContext context) {
@@ -37,6 +38,17 @@ class _RegisterCommuterState extends State<RegisterCommuter> {
             ),
           ),
           Image.asset('assets/undraw_town_r6pc__1_-removebg-preview.png'),
+          Container(
+              padding: EdgeInsets.only(top: 10),
+              child: TextFormField(
+                controller: nameController,
+                decoration: InputDecoration(
+                    enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.yellow[700]),
+                        borderRadius: BorderRadius.circular(17)),
+                    labelText: "Full Name",
+                    border: OutlineInputBorder()),
+              )),
           Container(
               padding: EdgeInsets.only(top: 10),
               child: TextFormField(
@@ -66,47 +78,57 @@ class _RegisterCommuterState extends State<RegisterCommuter> {
               onPressed: () {
                 final String email = emailController.text.trim();
                 final String password = passwordController.text.trim();
+                final String name = nameController.text.trim();
 
-                if (email.isEmpty) {
-                  return ("Email is Empty");
-                } else {
-                  if (password.isEmpty) {
-                    return ("Password is Empty");
-                  } else {
-                    context
-                        .read<Authenticate>()
-                        .signupCommuter(email, password)
-                        .then((value) async {
-                      User user = FirebaseAuth.instance.currentUser;
-                      await FirebaseFirestore.instance
-                          .collection("users")
-                          .doc(user.uid)
-                          .set({
-                        "uid": user.uid,
-                        "user_type": userType,
-                        "email": email,
-                        "password": password,
+                if (email.isEmpty || password.isEmpty || name.isEmpty) {
+                  return showDialog<void>(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          content: Text('Complete all the fields to proceed'),
+                          actions: <Widget>[
+                            ElevatedButton(
+                                child: Text("CLOSE"),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                })
+                          ],
+                        );
                       });
+                } else {
+                  context
+                      .read<Authenticate>()
+                      .signupCommuter(email, password)
+                      .then((value) async {
+                    User user = FirebaseAuth.instance.currentUser;
+                    await FirebaseFirestore.instance
+                        .collection("users")
+                        .doc(user.uid)
+                        .set({
+                      "uid": user.uid,
+                      "full_name": name,
+                      "user_type": userType,
+                      "email": email,
+                      "password": password,
                     });
-                    return showDialog<void>(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: Text('Successfully Signed Up'),
-                            content: Text('Back to Login'),
-                            actions: <Widget>[
-                              ElevatedButton(
-                                  child: Text("CLOSE"),
-                                  onPressed: () {
-                                    Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                            builder: (context) => LoginPage()));
-                                  })
-                            ],
-                          );
-                        });
-                  }
+                  });
+                  return showDialog<void>(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text('Successfully Signed Up'),
+                          content: Text('Back to Login'),
+                          actions: <Widget>[
+                            ElevatedButton(
+                                child: Text("CLOSE"),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                })
+                          ],
+                        );
+                      });
                 }
               },
               child: Text("CONFIRM"),

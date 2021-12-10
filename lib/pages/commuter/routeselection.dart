@@ -41,14 +41,6 @@ class _RouteSelectionState extends State<RouteSelection> {
     }
   }
 
-  /*void resetQueued() {
-    setState(() {
-      locationRoute.map((route) {
-        return route['queue'] = false;
-      });
-    });
-  }*/
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,7 +92,8 @@ class _RouteSelectionState extends State<RouteSelection> {
                                           );
                                         });
                                   }
-                                  if (MyApp.broadcast == false) {
+                                  if (routeListDetails[index]['broadcast'] ==
+                                      false) {
                                     return showDialog<void>(
                                         context: context,
                                         barrierDismissible: false,

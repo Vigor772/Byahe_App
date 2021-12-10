@@ -21,6 +21,8 @@ class MyApp extends StatelessWidget {
   static bool ping = false;
   static bool broadcast = false;
   static bool inboard = false;
+  static bool commuter = false;
+  static bool driver = true;
 
   @override
   Widget build(BuildContext context) {
