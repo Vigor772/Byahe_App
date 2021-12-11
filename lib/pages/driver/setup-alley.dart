@@ -105,7 +105,7 @@ class _SetupAlleyState extends State<SetupAlley> {
     }
   }
 
-  Container broadcastLocation() {
+  broadcastLocation() {
     if (MyApp.broadcast == false) {
       return Container(
         padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
@@ -126,7 +126,7 @@ class _SetupAlleyState extends State<SetupAlley> {
           ],
         ),
       );
-    } else {
+    } else if (MyApp.broadcast == true) {
       return Container(
         padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
         decoration: BoxDecoration(
@@ -208,13 +208,15 @@ class _SetupAlleyState extends State<SetupAlley> {
                       if (MyApp.broadcast == true) {
                         context.read<Authenticate>().updateBroadCast(false);
                         stopLiveLocation();
-                      } else {
+                        MyApp.broadcast = false;
+                      } else if (MyApp.broadcast == false) {
                         context.read<Authenticate>().updateBroadCast(true);
                         getLiveLocation();
+                        MyApp.broadcast = true;
                       }
-                      setState(() {
+                      /*setState(() {
                         MyApp.broadcast = !MyApp.broadcast;
-                      });
+                      });*/
                     },
                     child: broadcastLocation()),
                 InkWell(

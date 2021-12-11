@@ -1,4 +1,6 @@
 import 'package:byahe_app/pages/login_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:byahe_app/widgets/topbarmod.dart';
@@ -17,15 +19,13 @@ class ReserveVehicle extends StatefulWidget {
 
 class _ReserveVehicleState extends State<ReserveVehicle> {
   var routeData;
-  var genders = ['Male', 'Female'];
   _ReserveVehicleState(this.routeData);
-  TextEditingController fname = TextEditingController();
-  TextEditingController lname = TextEditingController();
-  TextEditingController gender = TextEditingController();
-  TextEditingController address = TextEditingController();
-  TextEditingController number = TextEditingController();
-  TextEditingController numpass = TextEditingController();
-  TextEditingController dateCtl = TextEditingController();
+  TextEditingController fnameController = TextEditingController();
+  TextEditingController genderController = TextEditingController();
+  TextEditingController addressController = TextEditingController();
+  TextEditingController numberController = TextEditingController();
+  TextEditingController numpassController = TextEditingController();
+  TextEditingController dateCtlController = TextEditingController();
   DateTime selectedDate = DateTime.now();
   @override
   Widget build(BuildContext context) {
@@ -94,29 +94,18 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
                 Container(
                     padding: EdgeInsets.symmetric(vertical: 10),
                     child: TextFormField(
-                      controller: lname,
+                      controller: fnameController,
                       decoration: InputDecoration(
                           enabledBorder: OutlineInputBorder(
                               borderSide:
                                   BorderSide(color: Colors.yellow[700])),
-                          labelText: 'Last name',
+                          labelText: 'Fullname',
                           border: OutlineInputBorder()),
                     )),
                 Container(
                     padding: EdgeInsets.symmetric(vertical: 10),
                     child: TextFormField(
-                      controller: fname,
-                      decoration: InputDecoration(
-                          enabledBorder: OutlineInputBorder(
-                              borderSide:
-                                  BorderSide(color: Colors.yellow[700])),
-                          labelText: "First name",
-                          border: OutlineInputBorder()),
-                    )),
-                Container(
-                    padding: EdgeInsets.symmetric(vertical: 10),
-                    child: TextFormField(
-                      controller: gender,
+                      controller: genderController,
                       decoration: InputDecoration(
                           enabledBorder: OutlineInputBorder(
                               borderSide:
@@ -127,7 +116,7 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
                 Container(
                     padding: EdgeInsets.symmetric(vertical: 10),
                     child: TextFormField(
-                      controller: address,
+                      controller: addressController,
                       decoration: InputDecoration(
                           enabledBorder: OutlineInputBorder(
                               borderSide:
@@ -138,7 +127,7 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
                 Container(
                     padding: EdgeInsets.symmetric(vertical: 10),
                     child: TextFormField(
-                      controller: number,
+                      controller: numberController,
                       decoration: InputDecoration(
                           enabledBorder: OutlineInputBorder(
                               borderSide:
@@ -149,7 +138,7 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
                 Container(
                     padding: EdgeInsets.symmetric(vertical: 10),
                     child: TextFormField(
-                      controller: numpass,
+                      controller: numpassController,
                       decoration: InputDecoration(
                           enabledBorder: OutlineInputBorder(
                               borderSide:
@@ -160,7 +149,7 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
                 Container(
                     padding: EdgeInsets.symmetric(vertical: 10),
                     child: TextFormField(
-                      controller: dateCtl,
+                      controller: dateCtlController,
                       decoration: InputDecoration(
                         suffixIcon: Icon(Icons.calendar_today_sharp),
                         enabledBorder: OutlineInputBorder(
@@ -183,7 +172,8 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
                             selectedDate = date;
                           });
                         }
-                        dateCtl.text = date.toIso8601String().split('T')[0];
+                        dateCtlController.text =
+                            date.toIso8601String().split('T')[0];
                       },
                     )),
               ]),
@@ -194,21 +184,19 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
               style: ElevatedButton.styleFrom(
                   primary: Colors.yellow[700], minimumSize: Size(200, 50)),
               onPressed: () {
-                var fnameControl = fname.text.trim();
-                var lnameControl = lname.text.trim();
-                var genderControl = gender.text.trim();
-                var addControl = address.text.trim();
-                var contactControl = number.text.trim();
-                var numpassControl = numpass.text.trim();
-                var dateControl = dateCtl.text.trim();
+                var fname = fnameController.text.trim();
+                var gender = genderController.text.trim();
+                var address = addressController.text.trim();
+                var number = numberController.text.trim();
+                var numpass = numpassController.text.trim();
+                var date = dateCtlController.text.trim();
 
-                if (fnameControl.isEmpty ||
-                    lnameControl.isEmpty ||
-                    genderControl.isEmpty ||
-                    addControl.isEmpty ||
-                    contactControl.isEmpty ||
-                    numpassControl.isEmpty ||
-                    dateControl.isEmpty) {
+                if (fname.isEmpty |
+                    gender.isEmpty |
+                    address.isEmpty |
+                    number.isEmpty |
+                    numpass.isEmpty |
+                    date.isEmpty) {
                   showDialog(
                       context: context,
                       builder: (context) {
@@ -224,17 +212,37 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
                           ],
                         );
                       });
-                } else {
-                  context.read<Authenticate>().bookings(
-                      routeData['vehicle_plate'],
-                      fname,
-                      lname,
-                      gender,
-                      address,
-                      number,
-                      numpass,
-                      dateCtl);
-                  showDialog(
+                } else if (!(fname.isEmpty |
+                    gender.isEmpty |
+                    address.isEmpty |
+                    number.isEmpty |
+                    numpass.isEmpty |
+                    date.isEmpty)) {
+                  var vehicle_plate = routeData['vehicle_plate_number'];
+                  var status = 'Pending';
+                  context.read<Authenticate>().bookings().then((value) async {
+                    User user = FirebaseAuth.instance.currentUser;
+                    await FirebaseFirestore.instance
+                        .collection('bookings')
+                        .doc(user.uid)
+                        .set({
+                      'status': status,
+                      'plate_reference': vehicle_plate,
+                      "customer name": fname,
+                      'gender': gender,
+                      'address': address,
+                      'contact_number': number,
+                      'number_of_passengers': numpass,
+                      'date_to_reserve': date,
+                    });
+                  });
+                  fnameController.clear();
+                  genderController.clear();
+                  numberController.clear();
+                  numpassController.clear();
+                  dateCtlController.clear();
+                  addressController.clear();
+                  return showDialog(
                       context: context,
                       builder: (context) {
                         return AlertDialog(
@@ -251,7 +259,6 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
                         );
                       });
                 }
-                Navigator.pop(context);
               },
               child: Text("CONFIRM")),
         )

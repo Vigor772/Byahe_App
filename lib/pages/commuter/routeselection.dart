@@ -6,7 +6,6 @@ import 'package:byahe_app/pages/commuter/map.dart';
 import 'package:flutter/rendering.dart';
 // ignore: implementation_imports
 import 'package:provider/src/provider.dart';
-import 'package:byahe_app/main.dart';
 
 // ignore: must_be_immutable
 class RouteSelection extends StatefulWidget {
@@ -28,7 +27,8 @@ class _RouteSelectionState extends State<RouteSelection> {
   }
 
   fetchRouteList() async {
-    dynamic results = await context.read<Authenticate>().getRouteListDetails();
+    dynamic results =
+        await context.read<Authenticate>().getRouteListDetails(locationLists);
 
     if (results == null) {
       print("Can't retrieve data");
@@ -63,76 +63,65 @@ class _RouteSelectionState extends State<RouteSelection> {
                     scrollDirection: Axis.vertical,
                     shrinkWrap: true,
                     itemCount: routeListDetails.length,
-                    // ignore: missing_return
                     itemBuilder: (context, index) {
-                      while (index != routeListDetails.length) {
-                        if (locationLists ==
-                            routeListDetails[index]['jeepney_line']) {
-                          return new Card(
-                              color: Colors.yellow[700],
-                              child: new ListTile(
-                                onTap: () {
-                                  if (routeListDetails[index]['status'] ==
-                                      'OFFLINE') {
-                                    return showDialog<void>(
-                                        context: context,
-                                        barrierDismissible: false,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            title:
-                                                Text("Can't retrieve location"),
-                                            content: Text('User Offline'),
-                                            actions: <Widget>[
-                                              ElevatedButton(
-                                                  child: Text("CLOSE"),
-                                                  onPressed: () {
-                                                    Navigator.of(context).pop();
-                                                  })
-                                            ],
-                                          );
-                                        });
-                                  }
-                                  if (routeListDetails[index]['broadcast'] ==
-                                      false) {
-                                    return showDialog<void>(
-                                        context: context,
-                                        barrierDismissible: false,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            title: Text("User is online"),
-                                            content: Text(
-                                                'But live location is turned off'),
-                                            actions: <Widget>[
-                                              ElevatedButton(
-                                                  child: Text("CLOSE"),
-                                                  onPressed: () {
-                                                    Navigator.of(context).pop();
-                                                  })
-                                            ],
-                                          );
-                                        });
-                                  }
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              Map(routeListDetails[index])));
-                                },
-                                title: Text(
-                                    routeListDetails[index]['jeepney_route'],
-                                    style: TextStyle(color: Colors.white)),
-                                subtitle: Text(
-                                    routeListDetails[index]['last_name'],
-                                    style: TextStyle(color: Colors.white)),
-                                leading: Icon(Icons.place, color: Colors.white),
-                                trailing: Text(
-                                    routeListDetails[index]['status'],
-                                    style: TextStyle(color: Colors.white)),
-                              ));
-                        }
-                        // ignore: unnecessary_statements
-                        index++;
-                      }
+                      return new Card(
+                          color: Colors.yellow[700],
+                          child: new ListTile(
+                            onTap: () {
+                              if (routeListDetails[index]['status'] ==
+                                  'OFFLINE') {
+                                return showDialog<void>(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: Text("Can't retrieve location"),
+                                        content: Text('User Offline'),
+                                        actions: <Widget>[
+                                          ElevatedButton(
+                                              child: Text("CLOSE"),
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              })
+                                        ],
+                                      );
+                                    });
+                              }
+                              if (routeListDetails[index]['broadcast'] ==
+                                  false) {
+                                return showDialog<void>(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: Text("User is online"),
+                                        content: Text(
+                                            'But live location is turned off'),
+                                        actions: <Widget>[
+                                          ElevatedButton(
+                                              child: Text("CLOSE"),
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              })
+                                        ],
+                                      );
+                                    });
+                              }
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          Map(routeListDetails[index])));
+                            },
+                            title: Text(
+                                routeListDetails[index]['jeepney_route'],
+                                style: TextStyle(color: Colors.white)),
+                            subtitle: Text(routeListDetails[index]['last_name'],
+                                style: TextStyle(color: Colors.white)),
+                            leading: Icon(Icons.place, color: Colors.white),
+                            trailing: Text(routeListDetails[index]['status'],
+                                style: TextStyle(color: Colors.white)),
+                          ));
                     }),
               )
             ],

@@ -21,6 +21,8 @@ class _RegisterDriverState extends State<RegisterDriver> {
   TextEditingController jrouteController = new TextEditingController();
   TextEditingController mobnumController = new TextEditingController();
   TextEditingController platenumController = new TextEditingController();
+  TextEditingController routepathController = new TextEditingController();
+  TextEditingController seatcapController = new TextEditingController();
   final String userType = "Driver";
   String useruid;
 
@@ -122,12 +124,34 @@ class _RegisterDriverState extends State<RegisterDriver> {
           Container(
               padding: EdgeInsets.only(top: 10),
               child: TextFormField(
+                controller: routepathController,
+                decoration: InputDecoration(
+                    enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.yellow[700]),
+                        borderRadius: BorderRadius.circular(17)),
+                    labelText: "Route Path(Ex. Gusa-Cugman-Lapasan...",
+                    border: OutlineInputBorder()),
+              )),
+          Container(
+              padding: EdgeInsets.only(top: 10),
+              child: TextFormField(
                 controller: mobnumController,
                 decoration: InputDecoration(
                     enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.yellow[700]),
                         borderRadius: BorderRadius.circular(17)),
-                    labelText: "Mobile Number",
+                    labelText: "Contact Number",
+                    border: OutlineInputBorder()),
+              )),
+          Container(
+              padding: EdgeInsets.only(top: 10),
+              child: TextFormField(
+                controller: seatcapController,
+                decoration: InputDecoration(
+                    enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.yellow[700]),
+                        borderRadius: BorderRadius.circular(17)),
+                    labelText: "Seat Capacity",
                     border: OutlineInputBorder()),
               )),
           Container(
@@ -153,77 +177,79 @@ class _RegisterDriverState extends State<RegisterDriver> {
                 final String jeeproute = jrouteController.text.trim();
                 final String mobnum = mobnumController.text.trim();
                 final String platenum = platenumController.text.trim();
-                if (email.isEmpty) {
-                  return ("Email is Empty");
-                }
-                if (platenum.isEmpty) {
-                  return ("Plat number is Empty");
-                }
-                if (fname.isEmpty) {
-                  return ("Firstname is Empty");
-                }
-                if (lname.isEmpty) {
-                  return ("Lastname is Empty");
-                }
-                if (jeepline.isEmpty) {
-                  return ("Jeepney Line is Empty");
-                }
-                if (jeeproute.isEmpty) {
-                  return ("Jeepney Route is Empty");
-                }
-                if (mobnum.isEmpty) {
-                  return ("Mobile Number is Empty");
-                } else {
-                  if (password.isEmpty) {
-                    return ("Password is Empty");
-                  } else {
-                    context
-                        .read<Authenticate>()
-                        .signupDriver(email, password)
-                        .then((value) async {
-                      User user = FirebaseAuth.instance.currentUser;
-                      await FirebaseFirestore.instance
-                          .collection("users")
-                          .doc(user.uid)
-                          .set({
-                        'uid': user.uid,
-                        'user_type': userType,
-                        'email': email,
-                        'password': password,
-                        'first_name': fname,
-                        'last_name': lname,
-                        'jeepney_line': jeepline,
-                        'jeepney_route': jeeproute,
-                        'mobile_number': mobnum,
-                        'vehicle_plate_number': platenum,
+                final String routepath = routepathController.text.trim();
+                final String seatcap = seatcapController.text.trim();
+                if (email.isEmpty |
+                    platenum.isEmpty |
+                    fname.isEmpty |
+                    lname.isEmpty |
+                    jeepline.isEmpty |
+                    jeeproute.isEmpty |
+                    mobnum.isEmpty |
+                    password.isEmpty |
+                    routepath.isEmpty |
+                    seatcap.isEmpty) {
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: Text("Complete the fields to proceed"),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: Text('CLOSE'),
+                            )
+                          ],
+                        );
                       });
+                } else {
+                  context
+                      .read<Authenticate>()
+                      .signupDriver(email, password)
+                      .then((value) async {
+                    User user = FirebaseAuth.instance.currentUser;
+                    await FirebaseFirestore.instance
+                        .collection("users")
+                        .doc(user.uid)
+                        .set({
+                      'uid': user.uid,
+                      'user_type': userType,
+                      'email': email,
+                      'password': password,
+                      'first_name': fname,
+                      'last_name': lname,
+                      'jeepney_line': jeepline,
+                      'jeepney_route': jeeproute,
+                      'route_path': routepath,
+                      'seats_avail': seatcap,
+                      'mobile_number': mobnum,
+                      'vehicle_plate_number': platenum,
                     });
-                    return showDialog<void>(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: Text('Successfully Signed Up'),
-                            content: Text('Back to Login'),
-                            actions: <Widget>[
-                              ElevatedButton(
-                                  child: Text("CLOSE"),
-                                  onPressed: () {
-                                    Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                            builder: (context) => LoginPage()));
-                                  })
-                            ],
-                          );
-                        });
-                  }
+                  });
+                  return showDialog<void>(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text('Successfully Signed Up'),
+                          actions: <Widget>[
+                            ElevatedButton(
+                                child: Text("CLOSE"),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                })
+                          ],
+                        );
+                      });
                 }
-                /*Navigator.push(
+              },
+              /*Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => RegisterDriverConfirmation()),
                 );*/
-              },
               child: Text("CONFIRM"),
               style: ElevatedButton.styleFrom(
                   primary: Colors.yellow[700],

@@ -46,21 +46,31 @@ class Authenticate {
     }
   }
 
-  Future<String> bookings(vehicle_plate, fname, lname, gender, address, number,
-      numpass, date) async {
-    String status = 'Pending';
+  Future bookings() async {
+    String status;
     String useruid = FirebaseAuth.instance.currentUser.uid;
-    await FirebaseFirestore.instance.collection('bookings').doc(useruid).set({
-      'status': status,
-      'plate_reference': vehicle_plate,
-      "customer name": fname + lname,
-      'gender': gender,
-      'address': address,
-      'contact_number': number,
-      'number_of_passengers': numpass,
-      'date_to_reserve': date,
-    });
-    return 'Successfully Booked';
+    var vehicle_plate;
+    var fname;
+    var gender;
+    var address;
+    var number;
+    var numpass;
+    var date;
+    await FirebaseFirestore.instance
+        .collection('bookings')
+        .doc(useruid)
+        .set({
+          'status': status,
+          'plate_reference': vehicle_plate,
+          "customer name": fname,
+          'gender': gender,
+          'address': address,
+          'contact_number': number,
+          'number_of_passengers': numpass,
+          'date_to_reserve': date,
+        })
+        .then((value) => print('Booking sent'))
+        .catchError((onError) => print('Failed to add booking: $onError'));
   }
 
   Future<String> signupDriver(String email, String password) async {
@@ -71,7 +81,12 @@ class Authenticate {
     String mobnum;
     String platenum;
     String userType;
-    String vehicle_status;
+    String vehicle_status = 'DRIVING';
+    String status = "ONLINE";
+    bool broadcast = false;
+    String route_path;
+    String seats_avail;
+    bool queue = false;
     try {
       await _auth
           .createUserWithEmailAndPassword(email: email, password: password)
@@ -87,9 +102,14 @@ class Authenticate {
           'last_name': lname,
           'jeepney_line': jeepline,
           'jeepney_route': jeeproute,
+          'route_path': route_path,
+          'seats_avail': seats_avail,
           'mobile_number': mobnum,
           'vehicle_plate_number': platenum,
           'vehicle_status': vehicle_status,
+          'queue': queue,
+          'broadcast': broadcast,
+          'status': status,
         });
       });
       return "Successfully Signed In";
@@ -108,7 +128,7 @@ class Authenticate {
       name = usercat['full_name'];
       return name;
     } else if (usercat['user_type'] == "Driver") {
-      name = usercat['first_name']; //+ usercat['last_name'];
+      name = usercat['first_name'] + usercat['last_name'];
       return name;
     }
   }
@@ -190,13 +210,32 @@ class Authenticate {
     return driverRoute;
   }
 
-  Future getRouteListDetails() async {
+  Future displayBookingsDriver(var plate) async {
+    List bookingList = [];
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('bookings')
+          .where('plate_reference', isEqualTo: plate)
+          .get()
+          .then((query) {
+        query.docs.forEach((element) {
+          bookingList.add(element);
+        });
+      });
+      return bookingList;
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  Future getRouteListDetails(String location) async {
     List routeList = [];
 
     try {
       await FirebaseFirestore.instance
           .collection('users')
-          .where('user_type', isEqualTo: 'Driver')
+          .where('jeepney_line', isEqualTo: location)
           .get()
           .then((query) {
         query.docs.forEach((doc) {

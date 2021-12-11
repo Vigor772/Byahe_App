@@ -18,31 +18,36 @@ class _TopBarModState extends State<TopBarMod> {
   var name;
   @override
   initState() {
-    retrieveUsertype();
-    retrieveUserName();
+    fetchUsertype();
+    fetchUserName();
     super.initState();
   }
 
-  retrieveUsertype() async {
+  fetchUsertype() async {
     dynamic result = await context.read<Authenticate>().retrieveUsertype();
     if (result == null) {
       print('Unable ro retrieve data');
     } else {
-      setState(() {
-        type = result;
-        print('usertype: $type');
-      });
+      if (mounted) {
+        setState(() {
+          type = result;
+          print('usertype: $type');
+        });
+      }
     }
   }
 
-  retrieveUserName() async {
+  fetchUserName() async {
     dynamic result = await context.read<Authenticate>().retrieveName();
     if (result == null) {
       print("Unable to retrieve user's name");
     } else {
-      setState(() {
-        name = result;
-      });
+      if (mounted) {
+        setState(() {
+          name = result;
+          print("user's: $name");
+        });
+      }
     }
   }
 
@@ -59,7 +64,7 @@ class _TopBarModState extends State<TopBarMod> {
                 )),
             Container(
                 child: Text(
-              name,
+              (name != null) ? name : "Anonymous",
               style: TextStyle(fontWeight: FontWeight.bold),
             )),
             Container(
@@ -93,37 +98,6 @@ class _TopBarModState extends State<TopBarMod> {
                   MyApp.inboard = false;
                 }
 
-                /*if (MyApp.ping == true) {
-                  showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: Text('WARNING'),
-                          content: Text(
-                              'You are not able to exit on this page while pinging!'),
-                          actions: <Widget>[
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: Text('CLOSE'),
-                            )
-                          ],
-                        );
-                      });
-                }*/
-              },
-              style: ElevatedButton.styleFrom(
-                onPrimary: Colors.white,
-                primary: Colors.yellow[700],
-              ),
-              child: toOnboard(),
-            )),
-          ])),
-      Expanded(
-          child: InkWell(
-              onTap: () {
-                print(MyApp.ping);
                 if (MyApp.ping == true) {
                   showDialog(
                       context: context,
@@ -142,11 +116,40 @@ class _TopBarModState extends State<TopBarMod> {
                           ],
                         );
                       });
-                } else {
-                  String status = "OFFLINE";
-                  context.read<Authenticate>().updateUserStatus(status);
-                  FirebaseAuth.instance.signOut();
                 }
+              },
+              style: ElevatedButton.styleFrom(
+                onPrimary: Colors.white,
+                primary: Colors.yellow[700],
+              ),
+              child: toOnboard(),
+            )),
+          ])),
+      Expanded(
+          child: InkWell(
+              onTap: () {
+                if (MyApp.ping == true) {
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: Text('WARNING'),
+                          content: Text(
+                              'You are not able to exit on this page while pinging!'),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: Text('CLOSE'),
+                            )
+                          ],
+                        );
+                      });
+                }
+                String status = "OFFLINE";
+                context.read<Authenticate>().updateUserStatus(status);
+                FirebaseAuth.instance.signOut();
               },
               child: Image.asset('assets/icons8-reply-arrow-30.png')))
     ]);

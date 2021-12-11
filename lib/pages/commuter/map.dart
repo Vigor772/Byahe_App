@@ -28,7 +28,9 @@ class _MapState extends State<Map> {
   var latitude;
   var longitude;
   var email;
-  var queueStatus;
+  //var queueStatus;
+  var currentUserType;
+  bool state = false;
   List commuterData = [];
   _MapState(this.routeData);
   StreamSubscription _locationSubscription;
@@ -93,6 +95,18 @@ class _MapState extends State<Map> {
     });
   }
 
+  fetchCurrentUser() async {
+    dynamic result = await context.read<Authenticate>().retrieveUsertype();
+
+    if (result == null) {
+      print('Unable to retrieve user type');
+    } else {
+      if (mounted) {
+        currentUserType = result;
+      }
+    }
+  }
+
   void getCurrentLocation() async {
     try {
       Uint8List imageData = await getMarker();
@@ -144,13 +158,14 @@ class _MapState extends State<Map> {
     fetchLat();
     fetchLong();
     fetchEmail();
+    fetchCurrentUser();
   }
 
   void dispose() {
     if (_locationSubscription != null) {
       _locationSubscription.cancel();
     }
-    queueStatus.dispose();
+    //queueStatus.dispose();
     super.dispose();
   }
 
@@ -199,7 +214,7 @@ class _MapState extends State<Map> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-        onWillPop: () async => routeData['queue']
+        onWillPop: () async => state
             ? showDialog<bool>(
                 context: context,
                 builder: (context) {
@@ -219,7 +234,7 @@ class _MapState extends State<Map> {
                 })
             : true,
         child: Scaffold(
-            backgroundColor: routeData['queue'] ? Colors.grey[200] : null,
+            backgroundColor: state ? Colors.grey[200] : null,
             body: SingleChildScrollView(
                 child: SafeArea(
                     child: Container(
@@ -229,9 +244,8 @@ class _MapState extends State<Map> {
                   Container(
                       decoration: BoxDecoration(
                           border: Border.all(
-                              color: routeData['queue']
-                                  ? Colors.redAccent
-                                  : Colors.yellow[700],
+                              color:
+                                  state ? Colors.redAccent : Colors.yellow[700],
                               width: 2)),
                       height: 400.0,
                       child: GoogleMap(
@@ -244,6 +258,9 @@ class _MapState extends State<Map> {
                         onMapCreated: (GoogleMapController controller) async {
                           _controller = controller;
                           getCurrentLocation();
+                          if (MyApp.ping == true) {
+                            getCommuterLocation();
+                          }
                         },
                       )),
                   Container(
@@ -251,7 +268,7 @@ class _MapState extends State<Map> {
                     children: <Widget>[
                       Container(
                           padding: EdgeInsets.only(top: 10),
-                          child: routeData['queue']
+                          child: state
                               ? Text('PINGING ...',
                                   style: TextStyle(
                                       color: Colors.red,
@@ -259,7 +276,7 @@ class _MapState extends State<Map> {
                                       fontWeight: FontWeight.bold))
                               : null),
                       Container(
-                          child: routeData['queue']
+                          child: state
                               ? Image.asset('assets/car_ride_tester.gif',
                                   height: 100)
                               : Image.asset(
@@ -355,7 +372,7 @@ class _MapState extends State<Map> {
                           ])),
                       Container(
                           padding: EdgeInsets.symmetric(horizontal: 25),
-                          child: routeData['queue']
+                          child: state
                               ? Container(
                                   height: 50,
                                   width: 200,
@@ -365,17 +382,13 @@ class _MapState extends State<Map> {
                                         var status = false;
                                         setState(() {
                                           cancelPing();
-                                          context
-                                              .read<Authenticate>()
-                                              .updateQueueStatus(status);
-                                          MyApp.ping = routeData['queue'];
-
                                           /*context
                                               .read<Authenticate>()
                                               .updateQueueStatus(status);*/
-                                          routeData['queue'] =
-                                              !routeData['queue'];
+                                          //MyApp.ping = false;
+                                          state = false;
                                         });
+                                        MyApp.ping = false;
                                       },
                                       style: ElevatedButton.styleFrom(
                                           primary: Colors.redAccent,
@@ -393,8 +406,7 @@ class _MapState extends State<Map> {
                                   children: <Widget>[
                                     ElevatedButton(
                                         onPressed: () {
-                                          if (routeData['user_type'] ==
-                                              "Driver") {
+                                          if (currentUserType == "Driver") {
                                             showDialog(
                                                 context: context,
                                                 builder: (context) {
@@ -414,16 +426,19 @@ class _MapState extends State<Map> {
                                                     ],
                                                   );
                                                 });
-                                          } else {
+                                          } else if (currentUserType ==
+                                              "Commuter") {
                                             setState(() {
                                               var status = true;
                                               savePing();
                                               getCommuterLocation();
-                                              context
+                                              /*context
                                                   .read<Authenticate>()
-                                                  .updateQueueStatus(status);
-                                              MyApp.ping = routeData['queue'];
+                                                  .updateQueueStatus(status);*/
+                                              //MyApp.ping = status;
+                                              state = true;
                                             });
+                                            MyApp.ping = true;
                                           }
                                         },
                                         style: ElevatedButton.styleFrom(
