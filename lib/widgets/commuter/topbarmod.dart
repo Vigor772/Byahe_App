@@ -16,7 +16,7 @@ class TopBarMod extends StatelessWidget {
                   radius: 15,
                   backgroundImage: AssetImage('assets/salac.jpg'),
                 )),
-            Container(height: 50, child: drawer()),   
+            Container(height: 50, child: drawer()),
             Container(
                 child: Text(
               'ID : 2018101451',

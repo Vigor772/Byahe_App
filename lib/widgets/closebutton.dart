@@ -13,8 +13,8 @@ class CloseButtonBlack extends StatelessWidget {
       child: InkWell(
           onTap: () {
             // Navigator.pushNamed(context, '/loginpage');
-            Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => LoginPage()));
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (context) => LoginPage()));
           },
           child: Image.asset('assets/closeblack.png')),
     );

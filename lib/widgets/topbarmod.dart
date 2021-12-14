@@ -57,17 +57,6 @@ class _TopBarModState extends State<TopBarMod> {
           flex: 5,
           child: Row(children: <Widget>[
             Container(
-                padding: EdgeInsets.symmetric(horizontal: 10),
-                child: CircleAvatar(
-                  radius: 15,
-                  backgroundImage: AssetImage('assets/salac.jpg'),
-                )),
-            Container(
-                child: Text(
-              (name != null) ? name : "Anonymous",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            )),
-            Container(
                 child: ElevatedButton(
               onPressed: () async {
                 if (type == "Commuter") {
@@ -147,9 +136,7 @@ class _TopBarModState extends State<TopBarMod> {
                         );
                       });
                 }
-                String status = "OFFLINE";
-                context.read<Authenticate>().updateUserStatus(status);
-                FirebaseAuth.instance.signOut();
+                Navigator.pop(context);
               },
               child: Image.asset('assets/icons8-reply-arrow-30.png')))
     ]);

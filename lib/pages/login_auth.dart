@@ -1,9 +1,6 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-//import 'package:byahe_app/pages/driver/onboard.dart';
-//import 'package:byahe_app/pages/commuter/locationselection.dart';
-import 'package:flutter/widgets.dart';
 
 class Authenticate {
   final FirebaseAuth _auth;
@@ -25,6 +22,10 @@ class Authenticate {
   Future<String> signupCommuter(String email, String password) async {
     String userType;
     String name;
+    bool queue = false;
+    String status = "ONLINE";
+    bool state = false;
+
     try {
       await _auth
           .createUserWithEmailAndPassword(email: email, password: password)
@@ -35,6 +36,9 @@ class Authenticate {
           "uid": user.uid,
           'full_name': name,
           "user_type": userType,
+          'queue': queue,
+          'status': 'ONLINE',
+          'state': state,
           "email": email,
           "password": password,
         });
@@ -49,7 +53,9 @@ class Authenticate {
   Future bookings() async {
     String status;
     String useruid = FirebaseAuth.instance.currentUser.uid;
+    // ignore: non_constant_identifier_names
     var vehicle_plate;
+    var drivername;
     var fname;
     var gender;
     var address;
@@ -58,11 +64,12 @@ class Authenticate {
     var date;
     await FirebaseFirestore.instance
         .collection('bookings')
-        .doc(useruid)
+        .doc(fname)
         .set({
           'status': status,
           'plate_reference': vehicle_plate,
-          "customer name": fname,
+          'driver_name': drivername,
+          "customer_name": fname,
           'gender': gender,
           'address': address,
           'contact_number': number,
@@ -128,7 +135,7 @@ class Authenticate {
       name = usercat['full_name'];
       return name;
     } else if (usercat['user_type'] == "Driver") {
-      name = usercat['first_name'] + usercat['last_name'];
+      name = usercat['last_name'];
       return name;
     }
   }
@@ -210,22 +217,22 @@ class Authenticate {
     return driverRoute;
   }
 
-  Future displayBookingsDriver(var plate) async {
+  Future displayBookingsDriver() async {
     List bookingList = [];
 
     try {
       await FirebaseFirestore.instance
           .collection('bookings')
-          .where('plate_reference', isEqualTo: plate)
           .get()
           .then((query) {
-        query.docs.forEach((element) {
-          bookingList.add(element);
+        query.docs.forEach((doc) {
+          bookingList.add(doc.data());
         });
       });
       return bookingList;
     } catch (e) {
       print(e.toString());
+      return null;
     }
   }
 
@@ -264,6 +271,7 @@ class Authenticate {
     var plate;
     DocumentSnapshot usercat =
         await FirebaseFirestore.instance.collection('users').doc(useruid).get();
+
     plate = usercat['vehicle_plate_number'];
     return plate;
   }
@@ -298,6 +306,15 @@ class Authenticate {
         .catchError((onError) => print('Failed to update status: $onError'));
   }
 
+  Future getCommuterQueueStatus() async {
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    var queue;
+    DocumentSnapshot usercat =
+        await FirebaseFirestore.instance.collection('users').doc(useruid).get();
+    queue = usercat['queue'];
+    return queue;
+  }
+
   Future updateBroadCast(bool status) {
     String useruid = FirebaseAuth.instance.currentUser.uid;
     return FirebaseFirestore.instance
@@ -306,5 +323,102 @@ class Authenticate {
         .update({'broadcast': status})
         .then((value) => print('Broadcast Status updated'))
         .catchError((onError) => print('Failed to update status: $onError'));
+  }
+
+  Future getTotalDriversRegistered() async {
+    var counter = 0;
+    try {
+      await FirebaseFirestore.instance.collection('users').get().then((query) {
+        query.docs.forEach((element) {
+          if (element['user_type'] == 'Driver') {
+            counter++;
+          }
+        });
+      });
+      return counter;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  Future getTotalDriversInRoute(var jeepney_line) async {
+    var counter = 0;
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .where('jeepney_line', isEqualTo: jeepney_line)
+          .get()
+          .then((query) {
+        query.docs.forEach((element) {
+          if (element['user_type'] == 'Driver') {
+            if (element['status'] == 'ONLINE') {
+              counter++;
+            }
+          }
+        });
+      });
+      return counter;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  Future getDriverRoute() async {
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    var driverRoute;
+
+    DocumentSnapshot usercat =
+        await FirebaseFirestore.instance.collection('users').doc(useruid).get();
+    driverRoute = usercat['jeepney_line'];
+    return driverRoute;
+  }
+
+  Future<void> clearPing() {
+    var ping_status = 'Cancelled';
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(useruid)
+        .update({
+          'ping_status': ping_status,
+          'pinged_driver': null,
+        })
+        .then((value) => print('Updated Ping Status: Cancelled'))
+        .catchError((onError) =>
+            print('Failed to clear Commuter Current LandMark: $onError'));
+  }
+
+  Future<void> updatePing(var driverplate) {
+    var ping_status = "Pending";
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(useruid)
+        .update({
+          'ping_status': ping_status,
+          'pinged_driver': driverplate,
+        })
+        .then((value) => print('Update Ping Status: Pending'))
+        .catchError(
+            (onError) => print('Failed to Update Ping Status into Pending'));
+  }
+
+  Future getPendingPingList() async {
+    List pingList = [];
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .where('user_type', isEqualTo: 'Commuter')
+          .where('ping_status', isEqualTo: 'Pending')
+          .get()
+          .then((query) {
+        query.docs.forEach((doc) {
+          pingList.add(doc.data());
+        });
+      });
+      return pingList;
+    } catch (e) {
+      return e.toString();
+    }
   }
 }
