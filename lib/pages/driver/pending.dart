@@ -48,6 +48,7 @@ class _PendingState extends State<Pending> {
     } else {
       setState(() {
         getPings = result;
+        print(getPings);
       });
     }
   }
@@ -95,7 +96,7 @@ class _PendingState extends State<Pending> {
             ),
           ),
           NavigationalContainer(this.pageName),
-          Container(
+          /*Container(
               alignment: Alignment.centerRight,
               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
               child: RichText(
@@ -110,7 +111,7 @@ class _PendingState extends State<Pending> {
                               color: Colors.redAccent,
                               fontWeight: FontWeight.bold)),
                     ]),
-              )),
+              )),*/
           Container(
               child: Column(
                   children: getPings
@@ -128,7 +129,7 @@ class _PendingState extends State<Pending> {
                           padding: EdgeInsets.symmetric(vertical: 10),
                           margin:
                               EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          child: (value['pinged_driver'] != null &&
+                          child: (/*value['pinged_driver'] != null &&*/
                                   value['pinged_driver'] == driverPlate)
                               ? Row(
                                   mainAxisAlignment:
@@ -142,12 +143,17 @@ class _PendingState extends State<Pending> {
                                                 Icons.account_circle_rounded)),
                                         Container(
                                           child: ListTile(
-                                            title: Text(
-                                              placeValue,
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                            subtitle: Text(value['email']),
+                                            title: (placeValue != null)
+                                                ? Text(
+                                                    placeValue,
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  )
+                                                : Text('Fetching data'),
+                                            subtitle: (value['email'] != null)
+                                                ? Text(value['email'])
+                                                : Text('Fetching data'),
                                           ),
                                         )
                                       ]),
@@ -174,18 +180,13 @@ class _PendingState extends State<Pending> {
                                         )
                                       ])
                                     ])
-                              : Row(
-                                  children: [
-                                    Container(
-                                        padding: EdgeInsets.symmetric(
-                                            vertical: 10, horizontal: 10),
-                                        child: Center(
-                                          child: Text('No Pending Pings',
-                                              style: TextStyle(
-                                                  color: Colors.grey)),
-                                        ))
-                                  ],
-                                )))
+                              : Container(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 10),
+                                  child: Center(
+                                    child: Text('No Pending Pings',
+                                        style: TextStyle(color: Colors.grey)),
+                                  ))))
                       .toList()))
         ])))));
   }

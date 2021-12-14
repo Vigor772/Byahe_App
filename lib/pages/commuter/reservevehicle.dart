@@ -5,8 +5,8 @@ import 'package:byahe_app/widgets/drawer/drawerlist.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:byahe_app/widgets/topbarmod.dart';
-import 'package:byahe_app/data/data.dart';
+//import 'package:byahe_app/widgets/topbarmod.dart';
+//import 'package:byahe_app/data/data.dart';
 import 'package:provider/src/provider.dart';
 
 // ignore: must_be_immutable
@@ -52,7 +52,6 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
             child: SafeArea(
                 child: Container(
           child: Column(children: <Widget>[
-            //Container(height: 50, child: TopBarMod()),
             Container(
                 padding: EdgeInsets.all(20),
                 child: Align(
@@ -242,8 +241,10 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
                         date.isEmpty)) {
                       var vehicle_plate;
                       var drivername;
+                      var fnamePlate;
                       drivername = routeData['last_name'];
                       vehicle_plate = routeData['vehicle_plate_number'];
+                      fnamePlate = fname + vehicle_plate;
                       var status = 'Pending';
                       context
                           .read<Authenticate>()
@@ -252,7 +253,7 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
                         User user = FirebaseAuth.instance.currentUser;
                         await FirebaseFirestore.instance
                             .collection('bookings')
-                            .doc(fname.trim())
+                            .doc(fnamePlate)
                             .set({
                           'status': status,
                           'plate_reference': vehicle_plate,

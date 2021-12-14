@@ -1,5 +1,6 @@
 import 'package:byahe_app/main.dart';
 import 'package:byahe_app/pages/commuter/locationselection.dart';
+import 'package:byahe_app/pages/commuter/reservedetails.dart';
 import 'package:byahe_app/pages/driver/onboard.dart';
 import 'package:byahe_app/pages/login_auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -49,11 +50,24 @@ class _DrawerListState extends State<DrawerList> {
             ? Column(
                 children: [
                   ListTile(
-                      leading: Icon(Icons.book_online),
-                      title: Text('Booking Requests')),
-                  InkWell(
-                    child: ListTile(
-                        leading: Icon(Icons.logout), title: Text('Log Out')),
+                    leading: Icon(Icons.book_online),
+                    title: Text('Booking Requests'),
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => ReserveDetails()));
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.location_searching),
+                    title: Text('Selection'),
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => LocationSelection()));
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.logout),
+                    title: Text('Log Out'),
                     onTap: () {
                       String status = "OFFLINE";
                       context.read<Authenticate>().updateUserStatus(status);

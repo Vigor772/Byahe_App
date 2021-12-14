@@ -50,6 +50,15 @@ class Authenticate {
     }
   }
 
+  Future respondBooking(var fnamePlate, var response) {
+    return FirebaseFirestore.instance
+        .collection('bookings')
+        .doc(fnamePlate)
+        .update({'status': response})
+        .then((value) => print('Successfully accepted the booking request'))
+        .catchError((onError) => print('Failed to accept request: $onError'));
+  }
+
   Future bookings() async {
     String status;
     String useruid = FirebaseAuth.instance.currentUser.uid;
@@ -57,6 +66,7 @@ class Authenticate {
     var vehicle_plate;
     var drivername;
     var fname;
+    var fnamePlate;
     var gender;
     var address;
     var number;
@@ -64,7 +74,7 @@ class Authenticate {
     var date;
     await FirebaseFirestore.instance
         .collection('bookings')
-        .doc(fname)
+        .doc(fnamePlate)
         .set({
           'status': status,
           'plate_reference': vehicle_plate,
@@ -217,7 +227,7 @@ class Authenticate {
     return driverRoute;
   }
 
-  Future displayBookingsDriver() async {
+  Future displayBookings() async {
     List bookingList = [];
 
     try {

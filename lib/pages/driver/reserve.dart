@@ -4,7 +4,7 @@ import 'package:byahe_app/widgets/drawer/drawerheader.dart';
 import 'package:byahe_app/widgets/drawer/drawerlist.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:byahe_app/widgets/topbarmod.dart';
+//import 'package:byahe_app/widgets/topbarmod.dart';
 import 'package:byahe_app/widgets/driver/navigationalcontainer.dart';
 // ignore: implementation_imports
 import 'package:provider/src/provider.dart';
@@ -21,6 +21,8 @@ class _ReserveState extends State<Reserve> {
   String platenum;
   var bookings = [];
   var drivername;
+  bool accepted = false;
+  bool rejected = false;
 
   @override
   void initState() {
@@ -45,7 +47,7 @@ class _ReserveState extends State<Reserve> {
   }
 
   fetchBookingDriver() async {
-    dynamic result = await context.read<Authenticate>().displayBookingsDriver();
+    dynamic result = await context.read<Authenticate>().displayBookings();
 
     if (result == null) {
       print('Unable to retrieve booking list for driver (reserve.dart)');
@@ -167,7 +169,7 @@ class _ReserveState extends State<Reserve> {
                                             ElevatedButton(
                                                 style: ElevatedButton.styleFrom(
                                                     primary: Colors.yellow[700],
-                                                    minimumSize: Size(150, 50)),
+                                                    minimumSize: Size(80, 35)),
                                                 onPressed: () {
                                                   Navigator.pop(context);
                                                 },
@@ -179,7 +181,8 @@ class _ReserveState extends State<Reserve> {
                                   );
                                 });
                           },
-                          child: info['plate_reference'] == platenum
+                          child: (info['plate_reference'] == platenum &&
+                                  info['plate_reference'] != null)
                               ? Container(
                                   decoration: BoxDecoration(
                                       color: Colors.white,
@@ -205,11 +208,8 @@ class _ReserveState extends State<Reserve> {
                                           Container(
                                               padding: EdgeInsets.symmetric(
                                                   horizontal: 5),
-                                              child: CircleAvatar(
-                                                radius: 20,
-                                                backgroundImage: AssetImage(
-                                                    'assets/salac.jpg'),
-                                              )),
+                                              child: Icon(Icons
+                                                  .account_circle_rounded)),
                                           Container(
                                             child: Text(
                                               info['customer_name'] +
@@ -222,21 +222,97 @@ class _ReserveState extends State<Reserve> {
                                           ),
                                           Container(
                                               child: Row(children: <Widget>[
-                                            Container(
-                                              padding: EdgeInsets.symmetric(
-                                                  horizontal: 2),
-                                              child: Image.asset(
-                                                'assets/check.png',
-                                                width: 35,
-                                              ),
+                                            InkWell(
+                                              onTap: () {
+                                                var fnamePlate;
+                                                var response = 'Accepted';
+                                                fnamePlate =
+                                                    info['customer_name'] +
+                                                        info['plate_reference'];
+                                                context
+                                                    .read<Authenticate>()
+                                                    .respondBooking(
+                                                        fnamePlate, response);
+                                                setState(() {
+                                                  accepted = true;
+                                                  rejected = false;
+                                                });
+                                              },
+                                              child: (accepted == false)
+                                                  ? Column(
+                                                      children: [
+                                                        Container(
+                                                          padding: EdgeInsets
+                                                              .symmetric(
+                                                                  horizontal:
+                                                                      2),
+                                                          child: Image.asset(
+                                                            'assets/check.png',
+                                                            width: 35,
+                                                          ),
+                                                        ),
+                                                        Text('Accept',
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .green,
+                                                                fontSize: 10)),
+                                                      ],
+                                                    )
+                                                  : Container(
+                                                      padding:
+                                                          EdgeInsets.all(5),
+                                                      child: Text('Accepted',
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.green,
+                                                              fontSize: 10))),
                                             ),
-                                            Container(
-                                              padding: EdgeInsets.symmetric(
-                                                  horizontal: 2),
-                                              child: Image.asset(
-                                                'assets/reject.png',
-                                                width: 35,
-                                              ),
+                                            InkWell(
+                                              onTap: () {
+                                                var fnamePlate;
+                                                var response = 'Rejected';
+                                                fnamePlate =
+                                                    info['customer_name'] +
+                                                        info['plate_reference'];
+                                                context
+                                                    .read<Authenticate>()
+                                                    .respondBooking(
+                                                        fnamePlate, response);
+                                                setState(() {
+                                                  rejected = true;
+                                                  accepted = false;
+                                                });
+                                              },
+                                              child: (rejected == false)
+                                                  ? Column(
+                                                      children: [
+                                                        Container(
+                                                          padding: EdgeInsets
+                                                              .symmetric(
+                                                                  horizontal:
+                                                                      2),
+                                                          child: Image.asset(
+                                                            'assets/reject.png',
+                                                            width: 35,
+                                                          ),
+                                                        ),
+                                                        Text('Reject',
+                                                            style: TextStyle(
+                                                                color:
+                                                                    Colors.red,
+                                                                fontSize: 10)),
+                                                      ],
+                                                    )
+                                                  : Container(
+                                                      padding:
+                                                          EdgeInsets.all(5),
+                                                      child: Text(
+                                                        'Rejected',
+                                                        style: TextStyle(
+                                                            color: Colors.red,
+                                                            fontSize: 10),
+                                                      ),
+                                                    ),
                                             )
                                           ]))
                                         ]),
@@ -252,9 +328,9 @@ class _ReserveState extends State<Reserve> {
                                   padding: EdgeInsets.symmetric(
                                       vertical: 10, horizontal: 10),
                                   child: Center(
-                                    child: Text('No Bookings Received',
-                                        style: TextStyle(color: Colors.grey)),
-                                  ))))
+                                      /*child: Text('No Bookings Received',
+                                        style: TextStyle(color: Colors.grey)),*/
+                                      ))))
                       .toList()))
         ])))));
   }
