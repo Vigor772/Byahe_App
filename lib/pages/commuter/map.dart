@@ -172,11 +172,14 @@ class _MapState extends State<Map> {
     fetchCurrentUser();
   }
 
+  @override
   void dispose() {
     if (_locationSubscription != null) {
       _locationSubscription.cancel();
     }
     //queueStatus.dispose();
+    latitude.dispose();
+    longitude.dispose();
     super.dispose();
   }
 

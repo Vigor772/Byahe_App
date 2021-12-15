@@ -21,8 +21,8 @@ class _ReserveState extends State<Reserve> {
   String platenum;
   var bookings = [];
   var drivername;
-  bool accepted = false;
-  bool rejected = false;
+  var accepted;
+  var rejected;
 
   @override
   void initState() {
@@ -221,100 +221,129 @@ class _ReserveState extends State<Reserve> {
                                             ),
                                           ),
                                           Container(
-                                              child: Row(children: <Widget>[
-                                            InkWell(
-                                              onTap: () {
-                                                var fnamePlate;
-                                                var response = 'Accepted';
-                                                fnamePlate =
-                                                    info['customer_name'] +
-                                                        info['plate_reference'];
-                                                context
-                                                    .read<Authenticate>()
-                                                    .respondBooking(
-                                                        fnamePlate, response);
-                                                setState(() {
-                                                  accepted = true;
-                                                  rejected = false;
-                                                });
-                                              },
-                                              child: (accepted == false)
-                                                  ? Column(
-                                                      children: [
-                                                        Container(
-                                                          padding: EdgeInsets
-                                                              .symmetric(
-                                                                  horizontal:
-                                                                      2),
-                                                          child: Image.asset(
-                                                            'assets/check.png',
-                                                            width: 35,
-                                                          ),
+                                            child:
+                                                (info['status'] != "Cancelled")
+                                                    ? Row(children: <Widget>[
+                                                        InkWell(
+                                                          onTap: () {
+                                                            var fnamePlate;
+                                                            var response =
+                                                                'Accepted';
+                                                            fnamePlate = info[
+                                                                    'customer_name'] +
+                                                                info[
+                                                                    'plate_reference'];
+                                                            context
+                                                                .read<
+                                                                    Authenticate>()
+                                                                .respondBooking(
+                                                                    fnamePlate,
+                                                                    response);
+                                                            /*setState(() {
+                                                              accepted = true;
+                                                              rejected = false;
+                                                            });*/
+                                                          },
+                                                          child: (info[
+                                                                      'status'] !=
+                                                                  "Accepted")
+                                                              ? Column(
+                                                                  children: [
+                                                                    Container(
+                                                                      padding: EdgeInsets.symmetric(
+                                                                          horizontal:
+                                                                              2),
+                                                                      child: Image
+                                                                          .asset(
+                                                                        'assets/check.png',
+                                                                        width:
+                                                                            35,
+                                                                      ),
+                                                                    ),
+                                                                    Text(
+                                                                        'Accept',
+                                                                        style: TextStyle(
+                                                                            color:
+                                                                                Colors.green,
+                                                                            fontSize: 10)),
+                                                                  ],
+                                                                )
+                                                              : Container(
+                                                                  padding:
+                                                                      EdgeInsets
+                                                                          .all(
+                                                                              5),
+                                                                  child: Text(
+                                                                      'Accepted',
+                                                                      style: TextStyle(
+                                                                          color: Colors
+                                                                              .green,
+                                                                          fontSize:
+                                                                              10))),
                                                         ),
-                                                        Text('Accept',
-                                                            style: TextStyle(
-                                                                color: Colors
-                                                                    .green,
-                                                                fontSize: 10)),
-                                                      ],
-                                                    )
-                                                  : Container(
-                                                      padding:
-                                                          EdgeInsets.all(5),
-                                                      child: Text('Accepted',
-                                                          style: TextStyle(
-                                                              color:
-                                                                  Colors.green,
-                                                              fontSize: 10))),
-                                            ),
-                                            InkWell(
-                                              onTap: () {
-                                                var fnamePlate;
-                                                var response = 'Rejected';
-                                                fnamePlate =
-                                                    info['customer_name'] +
-                                                        info['plate_reference'];
-                                                context
-                                                    .read<Authenticate>()
-                                                    .respondBooking(
-                                                        fnamePlate, response);
-                                                setState(() {
-                                                  rejected = true;
-                                                  accepted = false;
-                                                });
-                                              },
-                                              child: (rejected == false)
-                                                  ? Column(
-                                                      children: [
-                                                        Container(
-                                                          padding: EdgeInsets
-                                                              .symmetric(
-                                                                  horizontal:
-                                                                      2),
-                                                          child: Image.asset(
-                                                            'assets/reject.png',
-                                                            width: 35,
-                                                          ),
-                                                        ),
-                                                        Text('Reject',
+                                                        InkWell(
+                                                          onTap: () {
+                                                            var fnamePlate;
+                                                            var response =
+                                                                'Rejected';
+                                                            fnamePlate = info[
+                                                                    'customer_name'] +
+                                                                info[
+                                                                    'plate_reference'];
+                                                            context
+                                                                .read<
+                                                                    Authenticate>()
+                                                                .respondBooking(
+                                                                    fnamePlate,
+                                                                    response);
+                                                            /*setState(() {
+                                                              rejected = true;
+                                                              accepted = false;
+                                                            });*/
+                                                          },
+                                                          child:
+                                                              (info['status'] !=
+                                                                      'Rejected')
+                                                                  ? Column(
+                                                                      children: [
+                                                                        Container(
+                                                                          padding:
+                                                                              EdgeInsets.symmetric(horizontal: 2),
+                                                                          child:
+                                                                              Image.asset(
+                                                                            'assets/reject.png',
+                                                                            width:
+                                                                                35,
+                                                                          ),
+                                                                        ),
+                                                                        Text(
+                                                                            'Reject',
+                                                                            style:
+                                                                                TextStyle(color: Colors.red, fontSize: 10)),
+                                                                      ],
+                                                                    )
+                                                                  : Container(
+                                                                      padding:
+                                                                          EdgeInsets.all(
+                                                                              5),
+                                                                      child:
+                                                                          Text(
+                                                                        'Rejected',
+                                                                        style: TextStyle(
+                                                                            color:
+                                                                                Colors.red,
+                                                                            fontSize: 10),
+                                                                      ),
+                                                                    ),
+                                                        )
+                                                      ])
+                                                    : Container(
+                                                        child: Text('CANCELLED',
                                                             style: TextStyle(
                                                                 color:
                                                                     Colors.red,
-                                                                fontSize: 10)),
-                                                      ],
-                                                    )
-                                                  : Container(
-                                                      padding:
-                                                          EdgeInsets.all(5),
-                                                      child: Text(
-                                                        'Rejected',
-                                                        style: TextStyle(
-                                                            color: Colors.red,
-                                                            fontSize: 10),
-                                                      ),
-                                                    ),
-                                            )
-                                          ]))
+                                                                fontSize: 15))),
+                                          )
                                         ]),
                                     Container(
                                         alignment: Alignment.bottomCenter,

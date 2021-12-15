@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 
 class Authenticate {
   final FirebaseAuth _auth;
@@ -169,6 +170,15 @@ class Authenticate {
         .catchError((onError) => print('Failed to update status: $onError'));
   }
 
+  Future retrieveVehicleStatus() async {
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    String vehicle_status;
+    DocumentSnapshot usercat =
+        await FirebaseFirestore.instance.collection('users').doc(useruid).get();
+    vehicle_status = usercat['vehicle_status'];
+    return vehicle_status;
+  }
+
   Future updateUserStatus(String status) {
     String useruid = FirebaseAuth.instance.currentUser.uid;
     return FirebaseFirestore.instance
@@ -199,19 +209,17 @@ class Authenticate {
   }
 
   // ignore: non_constant_identifier_names
-  Future getAlleyList(var route_path) async {
+  Future getAlleyList() async {
     List alleyList = [];
 
     try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .where('route_path', isEqualTo: route_path)
-          .get()
-          .then((query) {
-        query.docs.forEach((doc) {
-          alleyList.add(doc.data());
+      await FirebaseFirestore.instance.collection('users').get().then((query) {
+        query.docChanges.forEach((document) {
+          alleyList.add(document.doc.data());
+          //alleyList.hashCode;
         });
       });
+      return alleyList;
     } catch (e) {
       print(e.toString());
       return null;
@@ -227,7 +235,7 @@ class Authenticate {
     return driverRoute;
   }
 
-  Future displayBookings() async {
+  /*Future displayBookings() async {
     List bookingList = [];
 
     try {
@@ -237,6 +245,25 @@ class Authenticate {
           .then((query) {
         query.docs.forEach((doc) {
           bookingList.add(doc.data());
+        });
+      });
+      return bookingList;
+    } catch (e) {
+      print(e.toString());
+      return null;
+    }
+  }*/
+
+  Future displayBookings() async {
+    List bookingList = [];
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('bookings')
+          .get()
+          .then((query) {
+        query.docChanges.forEach((doc) {
+          bookingList.add(doc.doc.data());
         });
       });
       return bookingList;
@@ -274,6 +301,15 @@ class Authenticate {
 
     latitude = usercat['latitude'];
     return latitude;
+  }
+
+  Future getBroadcastStatus() async {
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    var broadcast;
+    DocumentSnapshot usercat =
+        await FirebaseFirestore.instance.collection('users').doc(useruid).get();
+    broadcast = usercat['broadcast'];
+    return broadcast;
   }
 
   Future getPlate() async {

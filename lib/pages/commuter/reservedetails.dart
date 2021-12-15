@@ -17,6 +17,8 @@ class ReserveDetails extends StatefulWidget {
 class _ReserveDetailsState extends State<ReserveDetails> {
   var bookingDetails = [];
   var name;
+  var fnamePlate;
+  bool isButtonDisabled = false;
 
   @override
   initState() {
@@ -43,11 +45,9 @@ class _ReserveDetailsState extends State<ReserveDetails> {
     if (result == null) {
       print('Unable to retrieve booking details (reserverdetails.dart)');
     } else {
-      if (mounted) {
-        setState(() {
-          bookingDetails = result;
-        });
-      }
+      setState(() {
+        bookingDetails = result;
+      });
     }
   }
 
@@ -117,12 +117,19 @@ class _ReserveDetailsState extends State<ReserveDetails> {
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 12),
                                               ),
-                                              Text(info['status'],
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 12,
-                                                      color: Colors.yellow)),
+                                              (info['status'] != "Cancelled")
+                                                  ? Text(info['status'],
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 12,
+                                                          color: Colors.yellow))
+                                                  : Text(info['status'],
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 12,
+                                                          color: Colors.red)),
                                             ],
                                           ),
                                           Row(
@@ -245,15 +252,44 @@ class _ReserveDetailsState extends State<ReserveDetails> {
                                                   )),
                                             ],
                                           ),
-                                          Container(
-                                            alignment: Alignment.bottomCenter,
-                                            child: ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                    primary: Colors.yellow[700],
-                                                    minimumSize: Size(80, 35)),
-                                                onPressed: () {},
-                                                child: Text('Cancel Request')),
-                                          )
+                                          (info['status'] != "Cancelled")
+                                              ? Container(
+                                                  alignment:
+                                                      Alignment.bottomCenter,
+                                                  child: ElevatedButton(
+                                                      style: ElevatedButton
+                                                          .styleFrom(
+                                                              primary: Colors
+                                                                  .yellow[700],
+                                                              minimumSize:
+                                                                  Size(80, 35)),
+                                                      onPressed: () {
+                                                        var response;
+                                                        response = "Cancelled";
+                                                        if (info['status'] !=
+                                                            "Cancelled") {
+                                                          setState(() async {
+                                                            //isButtonDisabled = true;
+                                                            await context
+                                                                .read<
+                                                                    Authenticate>()
+                                                                .respondBooking(
+                                                                    fnamePlate =
+                                                                        info['customer_name'] +
+                                                                            info['plate_reference'],
+                                                                    response);
+                                                          });
+                                                        }
+                                                      },
+                                                      child: Text(
+                                                          'Cancel Request')),
+                                                )
+                                              : Container(
+                                                  alignment:
+                                                      Alignment.bottomCenter,
+                                                  child: Text('CANCELLED',
+                                                      style: TextStyle(
+                                                          color: Colors.red)))
                                         ]),
                                   ]))
                               : Container(

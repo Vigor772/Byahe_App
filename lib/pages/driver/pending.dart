@@ -143,14 +143,15 @@ class _PendingState extends State<Pending> {
                                                 Icons.account_circle_rounded)),
                                         Container(
                                           child: ListTile(
-                                            title: (placeValue != null)
-                                                ? Text(
+                                            title: //(placeValue != null)
+                                                /*? Text(
                                                     placeValue,
                                                     style: TextStyle(
                                                         fontWeight:
                                                             FontWeight.bold),
                                                   )
-                                                : Text('Fetching data'),
+                                                :*/
+                                                Text('Fetching data'),
                                             subtitle: (value['email'] != null)
                                                 ? Text(value['email'])
                                                 : Text('Fetching data'),

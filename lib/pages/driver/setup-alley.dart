@@ -29,6 +29,7 @@ class _SetupAlleyState extends State<SetupAlley> {
   String status;
   String driverPath;
   String driverPlate;
+  bool vehicleStatus;
   var alleyList = [];
   final locate.Location location = locate.Location();
   StreamSubscription<locate.LocationData> _locationSubscription;
@@ -40,6 +41,7 @@ class _SetupAlleyState extends State<SetupAlley> {
     fetchPath();
     fetchAlleyList();
     fetchPlateNum();
+    fetchVehicleStatus();
     location.changeSettings(
         interval: 300, accuracy: locate.LocationAccuracy.high);
     location.enableBackgroundMode(enable: true);
@@ -48,7 +50,7 @@ class _SetupAlleyState extends State<SetupAlley> {
   fetchPath() async {
     dynamic result = await context.read<Authenticate>().getDriverRoutePath();
     if (result == null) {
-      print('Unable to retrieve driver path');
+      print('Unable to retrieve driver path (setup-alley.dart)');
     } else {
       if (mounted) {
         setState(() {
@@ -61,7 +63,7 @@ class _SetupAlleyState extends State<SetupAlley> {
   fetchPlateNum() async {
     dynamic result = await context.read<Authenticate>().getPlate();
     if (result == null) {
-      print('Unable to retrieve driver plate number');
+      print('Unable to retrieve driver plate number (setup-alley.dart)');
     } else {
       if (mounted) {
         setState(() {
@@ -71,11 +73,23 @@ class _SetupAlleyState extends State<SetupAlley> {
     }
   }
 
-  fetchAlleyList() async {
-    dynamic result =
-        await context.read<Authenticate>().getAlleyList(driverPath);
+  fetchVehicleStatus() async {
+    dynamic result = await context.read<Authenticate>().retrieveVehicleStatus();
     if (result == null) {
-      print('Unable to retrieve driver path or it is empty');
+      print('Unable to retreive vehicle_status (setup-alley.dart)');
+    } else {
+      if (mounted) {
+        setState(() {
+          vehicleStatus = result;
+        });
+      }
+    }
+  }
+
+  fetchAlleyList() async {
+    dynamic result = await context.read<Authenticate>().getAlleyList();
+    if (result == null) {
+      print('Unable to retrieve driver alley list (setup-alley.dart');
     } else {
       if (mounted) {
         setState(() {
@@ -276,7 +290,7 @@ class _SetupAlleyState extends State<SetupAlley> {
                     InkWell(
                         onTap: () {
                           if (MyApp.alley == true) {
-                            for (var map in alleyList) {
+                            /*for (var map in alleyList) {
                               if (map['vehicle_plate_number'] == driverPlate) {
                                 alleyList.remove(map);
                                 context
@@ -284,10 +298,13 @@ class _SetupAlleyState extends State<SetupAlley> {
                                     .updateVehicleStatus(status = 'DRIVING');
                                 break;
                               }
-                            }
+                            }*/
+                            context
+                                .read<Authenticate>()
+                                .updateVehicleStatus(status = 'DRIVING');
                           } else {
-                            alleyList
-                                .add({'vehicle_plate_number': driverPlate});
+                            /*alleyList
+                                .add({'vehicle_plate_number': driverPlate});*/
                             context
                                 .read<Authenticate>()
                                 .updateVehicleStatus(status = 'ALLEY');
@@ -299,56 +316,62 @@ class _SetupAlleyState extends State<SetupAlley> {
                         child: alleyFunction())
                   ])),
           Container(
-            child: (alleyList.isNotEmpty)
-                ? Column(
-                    children: alleyList
-                        .map((jeep) => Container(
-                            decoration: BoxDecoration(
-                                color:
-                                    driverPlate == jeep['vehicle_plate_number']
+              child: Text("$driverPath Alley",
+                  style: TextStyle(color: Colors.grey))),
+          Container(
+              child: Column(
+                  children: alleyList
+                      .map(
+                        (jeep) => (jeep['route_path'] == driverPath &&
+                                jeep['vehicle_status'] == "ALLEY")
+                            ? Container(
+                                decoration: BoxDecoration(
+                                    color: driverPlate ==
+                                            jeep['vehicle_plate_number']
                                         ? Colors.yellowAccent[700]
                                         : Colors.yellow[700],
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(5)),
-                                boxShadow: [
-                                  BoxShadow(
-                                      blurRadius: 10,
-                                      color: Colors.grey,
-                                      offset: Offset(3, 3)),
-                                ]),
-                            padding: EdgeInsets.symmetric(
-                                vertical: 15, horizontal: 10),
-                            margin: EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 5),
-                            child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  Row(children: <Widget>[
-                                    Container(
-                                      child: Text(
-                                        jeep['vehicle_plate_number'],
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    )
-                                  ]),
-                                  Container(
-                                    child: Icon(Icons.more_horiz),
-                                  )
-                                ])))
-                        .toList())
-                : Container(
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(5)),
-                        boxShadow: [
-                          BoxShadow(
-                              blurRadius: 10,
-                              color: Colors.grey,
-                              offset: Offset(3, 3)),
-                        ]),
-                  ),
-          )
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(5)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                          blurRadius: 10,
+                                          color: Colors.grey,
+                                          offset: Offset(3, 3)),
+                                    ]),
+                                padding: EdgeInsets.symmetric(
+                                    vertical: 15, horizontal: 10),
+                                margin: EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 5),
+                                child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: <Widget>[
+                                      Row(children: <Widget>[
+                                        Container(
+                                          child: Text(
+                                            jeep['vehicle_plate_number'],
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                        Container(
+                                          child: Text(
+                                            ' Driver: ${jeep["last_name"]}',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        )
+                                      ]),
+                                      Container(
+                                        child: Icon(Icons.more_horiz),
+                                      )
+                                    ]))
+                            : Container(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: 1, horizontal: 1),
+                              ),
+                      )
+                      .toList()))
         ])))));
   }
 }
