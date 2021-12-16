@@ -278,9 +278,9 @@ class _SetupAlleyState extends State<SetupAlley> {
                             stopLiveLocation();
                             MyApp.broadcast = false;
                           } else if (MyApp.broadcast == false) {
+                            MyApp.broadcast = true;
                             context.read<Authenticate>().updateBroadCast(true);
                             getLiveLocation();
-                            MyApp.broadcast = true;
                           }
                           /*setState(() {
                         MyApp.broadcast = !MyApp.broadcast;

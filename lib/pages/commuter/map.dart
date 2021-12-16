@@ -1,3 +1,4 @@
+// ignore_for_file: missing_return
 import 'dart:async';
 import 'dart:typed_data';
 import 'package:byahe_app/main.dart';
@@ -10,7 +11,6 @@ import 'package:byahe_app/widgets/topbarmod.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart' as locate;
-import 'package:geocoding/geocoding.dart';
 import 'package:provider/src/provider.dart';
 // ignore: implementation_imports
 
@@ -28,7 +28,6 @@ class _MapState extends State<Map> {
   var latitude;
   var longitude;
   var email;
-  var currentLandMark;
   //var queueStatus;
   var currentUserType;
   bool state = false;
@@ -41,14 +40,6 @@ class _MapState extends State<Map> {
   Marker marker2;
   List<Marker> usersMarkers = [];
   Circle circle;
-
-  cancelPing() {
-    Marker mark = usersMarkers
-        .firstWhere((mark) => mark.markerId.value == email, orElse: () => null);
-    setState(() {
-      usersMarkers.remove(mark);
-    });
-  }
 
   Future<Uint8List> getMarker() async {
     ByteData byteData =
@@ -64,10 +55,8 @@ class _MapState extends State<Map> {
 
   void updateMarkerAndCircle(
       locate.LocationData newLocalData, Uint8List imageData) {
-    LatLng latlng = LatLng(newLocalData.latitude, newLocalData.longitude);
     LatLng driverLocation =
         LatLng(routeData['latitude'], routeData['longitude']);
-    print(driverLocation);
     this.setState(() {
       marker = Marker(
           markerId: MarkerId("home"),
@@ -90,12 +79,14 @@ class _MapState extends State<Map> {
 
   void updateMarkerCommuter(
       locate.LocationData newLocalData, Uint8List imageData2) {
-    LatLng commuter = LatLng(latitude, longitude);
-    print(commuter);
+    //LatLng commuter = LatLng(latitude, longitude);
+    LatLng latlng = LatLng(newLocalData.latitude, newLocalData.longitude);
+    //print(commuter);
+    print(latlng);
     this.setState(() {
       marker2 = Marker(
           markerId: MarkerId(email.toString()),
-          position: commuter,
+          position: /*commuter,*/ latlng,
           rotation: newLocalData.heading,
           infoWindow: InfoWindow(title: '$email pinged'),
           draggable: false,
@@ -151,7 +142,10 @@ class _MapState extends State<Map> {
       Uint8List imageData2 = await getMarker2();
       var location = await _locationTracker.getLocation();
       updateMarkerCommuter(location, imageData2);
-
+      await FirebaseFirestore.instance.collection('users').doc(useruid).set({
+        'latitude': location.latitude,
+        'longitude': location.longitude,
+      }, SetOptions(merge: true));
       if (_locationSubscription != null) {
         _locationSubscription.cancel();
       }
@@ -172,14 +166,11 @@ class _MapState extends State<Map> {
     fetchCurrentUser();
   }
 
-  @override
   void dispose() {
     if (_locationSubscription != null) {
       _locationSubscription.cancel();
     }
     //queueStatus.dispose();
-    latitude.dispose();
-    longitude.dispose();
     super.dispose();
   }
 
@@ -272,9 +263,9 @@ class _MapState extends State<Map> {
                         onMapCreated: (GoogleMapController controller) async {
                           _controller = controller;
                           getCurrentLocation();
-                          if (MyApp.ping == true) {
+                          /*if (MyApp.ping == true) {
                             getCommuterLocation();
-                          }
+                          }*/
                         },
                       )),
                   Container(
@@ -393,18 +384,13 @@ class _MapState extends State<Map> {
                                   margin: EdgeInsets.all(10),
                                   child: ElevatedButton(
                                       onPressed: () {
-                                        var status = false;
-                                        cancelPing();
-                                        context
-                                            .read<Authenticate>()
-                                            .clearPing();
                                         setState(() {
-                                          /*context
+                                          cancelPing();
+                                          context
                                               .read<Authenticate>()
-                                              .updateQueueStatus(status);*/
-                                          //MyApp.ping = false;
-                                          state = false;
+                                              .clearPing();
                                           MyApp.ping = false;
+                                          state = false;
                                         });
                                       },
                                       style: ElevatedButton.styleFrom(
@@ -446,22 +432,14 @@ class _MapState extends State<Map> {
                                           } else if (currentUserType ==
                                               "Commuter") {
                                             setState(() {
-                                              var status = true;
-                                              MyApp.ping = true;
-                                              if (MyApp.ping == true) {
-                                                savePing();
-                                                getCommuterLocation();
-                                                context
-                                                    .read<Authenticate>()
-                                                    .updatePing(routeData[
-                                                        'vehicle_plate_number']);
-                                              }
-
-                                              /*context
-                                                  .read<Authenticate>()
-                                                  .updateQueueStatus(status);*/
-                                              //MyApp.ping = status;
+                                              //savePing();
+                                              getCommuterLocation();
                                               state = true;
+                                              context
+                                                  .read<Authenticate>()
+                                                  .updatePing(routeData[
+                                                      'vehicle_plate_number']);
+                                              MyApp.ping = true;
                                             });
                                           }
                                         },
@@ -500,17 +478,38 @@ class _MapState extends State<Map> {
             )))));
   }
 
-  Future<void> savePing() async {
+  /*Future<void> savePing() async {
     String useruid = FirebaseAuth.instance.currentUser.uid;
     try {
       final locate.LocationData currentLocation =
           await _locationTracker.getLocation();
-      await FirebaseFirestore.instance.collection('users').doc(useruid).update({
+      await FirebaseFirestore.instance.collection('users').doc(useruid).set({
         'latitude': currentLocation.latitude,
         'longitude': currentLocation.longitude,
-      } /*, SetOptions(merge: true)*/);
+      }, SetOptions(merge: true));
     } catch (e) {
       print(e.toString());
     }
+  }*/
+
+  /*getCoordinates() async {
+    Uint8List imageData2 = await getMarker2();
+    setState(() {
+      usersMarkers.add(Marker(
+          markerId: MarkerId(email),
+          position: LatLng(latitude, longitude),
+          infoWindow: InfoWindow(
+            title: '$email pinged',
+          ),
+          icon: BitmapDescriptor.fromBytes(imageData2)));
+    });
+  }*/
+
+  cancelPing() {
+    Marker mark = usersMarkers
+        .firstWhere((mark) => mark.markerId.value == email, orElse: () => null);
+    setState(() {
+      usersMarkers.remove(mark);
+    });
   }
 }

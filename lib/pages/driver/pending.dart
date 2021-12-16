@@ -35,14 +35,17 @@ class _PendingState extends State<Pending> {
     if (result == null) {
       print('Unable to retreive email (pending.dart)');
     } else {
-      setState(() {
-        driverPlate = result;
-      });
+      if (mounted) {
+        setState(() {
+          driverPlate = result;
+        });
+      }
     }
   }
 
   fetchPingList() async {
-    dynamic result = await context.read<Authenticate>().getPendingPingList();
+    dynamic result =
+        await context.read<Authenticate>().getPendingPingList(driverPlate);
     if (result == null) {
       print('Unable to retrieve ping list (pending.dart)');
     } else {
@@ -53,19 +56,18 @@ class _PendingState extends State<Pending> {
     }
   }
 
-  Future<void> getAddressFromCoordinates(var latitude, var longitude) async {
-    var currentLandMark;
+  Future getAddressFromCoordinates(var latitude, var longitude) async {
     List<Placemark> placemarks =
         await placemarkFromCoordinates(latitude, longitude);
     Placemark place = placemarks[0];
-    currentLandMark = '${place.street}, ${place.locality}';
-    return currentLandMark;
+
+    setState(() {
+      placeValue = '${place.street}, ${place.locality}';
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    getPings.map((value) => placeValue =
-        getAddressFromCoordinates(value['latitude'], value['longitude']));
     return Scaffold(
         appBar: AppBar(
             backgroundColor: Colors.transparent,
@@ -88,7 +90,6 @@ class _PendingState extends State<Pending> {
             child: SafeArea(
                 child: Container(
                     child: Column(children: <Widget>[
-          //Container(height: 50, child: TopBarMod()),
           Container(
             child: Text(
               this.pageName.toUpperCase(),
@@ -113,9 +114,99 @@ class _PendingState extends State<Pending> {
                     ]),
               )),*/
           Container(
-              child: Column(
-                  children: getPings
-                      .map((value) => Container(
+              child: new ListView.builder(
+                  scrollDirection: Axis.vertical,
+                  shrinkWrap: true,
+                  itemCount: getPings.length,
+                  itemBuilder: (context, index) {
+                    getAddressFromCoordinates(getPings[index]['latitude'],
+                        getPings[index]['longitude']);
+                    print(placeValue);
+                    return Container(
+                        decoration: BoxDecoration(
+                            color: Colors.yellow[700],
+                            borderRadius: BorderRadius.all(Radius.circular(5)),
+                            boxShadow: [
+                              BoxShadow(
+                                  blurRadius: 10,
+                                  color: Colors.grey,
+                                  offset: Offset(3, 3)),
+                            ]),
+                        padding: EdgeInsets.symmetric(vertical: 10),
+                        margin:
+                            EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Row(children: <Widget>[
+                                Container(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 10),
+                                    child: Icon(Icons.account_circle)),
+                                Container(
+                                  child: Column(
+                                    children: [
+                                      (placeValue != null)
+                                          ? Text(
+                                              placeValue,
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold),
+                                            )
+                                          : Text('Fetching Location...',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold)),
+                                      (getPings[index]['full_name'] != null)
+                                          ? Text(getPings[index]['full_name'],
+                                              style: TextStyle(fontSize: 10))
+                                          : Text('Fetching Name',
+                                              style: TextStyle(fontSize: 10)),
+                                    ],
+                                  ),
+                                )
+                              ]),
+                              Row(children: <Widget>[
+                                InkWell(
+                                  onTap: () {
+                                    var ping_status;
+                                    ping_status = 'Onboard';
+                                    context.read<Authenticate>().pingResponse(
+                                        getPings[index]['uid'], ping_status);
+                                  },
+                                  child: Container(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 5),
+                                    child: Image.asset(
+                                      'assets/check.png',
+                                      width: 50,
+                                    ),
+                                  ),
+                                ),
+                                InkWell(
+                                  onTap: () {
+                                    var ping_status;
+                                    ping_status = "Rejected";
+                                    context.read<Authenticate>().pingResponse(
+                                        getPings[index]['uid'], ping_status);
+                                  },
+                                  child: Container(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 5),
+                                    child: Image.asset(
+                                      'assets/reject.png',
+                                      width: 50,
+                                    ),
+                                  ),
+                                )
+                              ])
+                            ]));
+                  }))
+        ])))));
+  }
+}
+
+
+/*Column(
+                  children:Container(
                           decoration: BoxDecoration(
                               color: Colors.yellow[700],
                               borderRadius:
@@ -187,8 +278,5 @@ class _PendingState extends State<Pending> {
                                   child: Center(
                                     child: Text('No Pending Pings',
                                         style: TextStyle(color: Colors.grey)),
-                                  ))))
-                      .toList()))
-        ])))));
-  }
-}
+                                  )))
+                      .toList())*/

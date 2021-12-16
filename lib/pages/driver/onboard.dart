@@ -1,4 +1,5 @@
 import 'package:byahe_app/pages/driver/pending.dart';
+import 'package:byahe_app/pages/login_auth.dart';
 import 'package:byahe_app/widgets/drawer/drawerheader.dart';
 import 'package:byahe_app/widgets/drawer/drawerlist.dart';
 import 'package:flutter/cupertino.dart';
@@ -6,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:byahe_app/widgets/topbarmod.dart';
 import 'package:byahe_app/widgets/driver/navigationalcontainer.dart';
 import 'package:byahe_app/data/data.dart';
+import 'package:provider/src/provider.dart';
 
 class Onboard extends StatefulWidget {
   // const Onboard({ Key? key }) : super(key: key);
@@ -16,6 +18,8 @@ class Onboard extends StatefulWidget {
 
 class _OnboardState extends State<Onboard> {
   int jeepcapacity = 12;
+  var driverPlate;
+  List getPingsOnboard = [];
 
   // ignore: missing_return
   Color checkVacant(int occupy) {
@@ -28,6 +32,40 @@ class _OnboardState extends State<Onboard> {
       return Colors.yellow[700];
     } else if (occupy > mid && occupy <= high) {
       return Colors.redAccent;
+    }
+  }
+
+  @override
+  initState() {
+    super.initState();
+    fetchDriverPlate();
+    fetchOnboardPing();
+  }
+
+  fetchOnboardPing() async {
+    dynamic result =
+        await context.read<Authenticate>().getAcceptedPingList(driverPlate);
+    if (result == null) {
+      print('Unable to get Onboard Ping (onboard.dart)');
+    } else {
+      if (mounted) {
+        setState(() {
+          getPingsOnboard = result;
+        });
+      }
+    }
+  }
+
+  fetchDriverPlate() async {
+    dynamic result = await context.read<Authenticate>().getPlate();
+    if (result == null) {
+      print('Unable to get driver plate (onboard.dart)');
+    } else {
+      if (mounted) {
+        setState(() {
+          driverPlate = result;
+        });
+      }
     }
   }
 
@@ -56,7 +94,6 @@ class _OnboardState extends State<Onboard> {
             child: SafeArea(
                 child: Container(
                     child: Column(children: <Widget>[
-          //Container(height: 50, child: TopBarMod()),
           Container(
             child: Text(
               this.pageName.toUpperCase(),

@@ -79,25 +79,6 @@ class _RouteSelectionState extends State<RouteSelection> {
     }
   }
 
-  /*savePing() async {
-    //String useruid = FirebaseAuth.instance.currentUser.uid;
-    try {
-      final LocationData currentLocation = await _locationTracker.getLocation();
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(routeListDetails[index]['uid'])
-          .collection('ping_collection')
-          .doc()
-          .set({
-        'commuter': email,
-        'latitude': currentLocation.latitude,
-        'longitude': currentLocation.longitude,
-      }, SetOptions(merge: true));
-    } catch (e) {
-      print(e.toString());
-    }
-  }*/
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -122,7 +103,6 @@ class _RouteSelectionState extends State<RouteSelection> {
             child: Container(
               child: Column(
                 children: <Widget>[
-                  //TopBarMod(),
                   Container(
                       padding: EdgeInsets.all(15),
                       child: Align(

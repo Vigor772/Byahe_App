@@ -449,13 +449,45 @@ class Authenticate {
             (onError) => print('Failed to Update Ping Status into Pending'));
   }
 
-  Future getPendingPingList() async {
+  Future getPendingPingList(var vehicle_plate_number) async {
     List pingList = [];
     try {
       await FirebaseFirestore.instance
           .collection('users')
           .where('user_type', isEqualTo: 'Commuter')
           .where('ping_status', isEqualTo: 'Pending')
+          .where('pinged_driver', isEqualTo: vehicle_plate_number)
+          .get()
+          .then((query) {
+        query.docs.forEach((doc) {
+          pingList.add(doc.data());
+        });
+      });
+      return pingList;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  Future pingResponse(var user_uid, var ping_status) async {
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(user_uid)
+        .update({'ping_status': ping_status})
+        .then((value) =>
+            print('Successfully updated ping status into $ping_status'))
+        .catchError(
+            (onError) => print('Failed to update ping_status: $onError'));
+  }
+
+  Future getAcceptedPingList(var vehicle_plate_number) async {
+    List pingList = [];
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .where('user_type', isEqualTo: "Commuter")
+          .where('ping_status', isEqualTo: "Onboard")
+          .where('pinged_driver', isEqualTo: vehicle_plate_number)
           .get()
           .then((query) {
         query.docs.forEach((doc) {
