@@ -47,13 +47,22 @@ class _LocationSelectionState extends State<LocationSelection> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            bottomOpacity: 0.0,
-            elevation: 0.0,
-            iconTheme: IconThemeData(color: Colors.yellow[700]),
-            title: Text('Byahe App',
-                style: TextStyle(
-                    color: Colors.yellow[700], fontWeight: FontWeight.bold))),
+          backgroundColor: Colors.transparent,
+          bottomOpacity: 0.0,
+          elevation: 0.0,
+          iconTheme: IconThemeData(color: Colors.yellow[700]),
+          // actions: <Widget>[
+          //   IconButton(
+          //     icon: const Icon(Icons.arrow_back),
+          //     onPressed: () {
+          //       // handle the press
+          //     },
+          //   ),
+          // ],
+          title: Text('Byahe App',
+              style: TextStyle(
+                  color: Colors.yellow[700], fontWeight: FontWeight.bold)),
+        ),
         drawer: Drawer(
           child: SingleChildScrollView(
             child: Container(

@@ -24,14 +24,13 @@ class RouteSelection extends StatefulWidget {
 class _RouteSelectionState extends State<RouteSelection> {
   List routeListDetails = [];
   var locationLists;
-  var email;
   var userType;
   Location _locationTracker = Location();
   _RouteSelectionState(this.locationLists);
+
   @override
   void initState() {
     fetchRouteList();
-    fetchEmail();
     fetchUserType();
     super.initState();
   }
@@ -65,20 +64,6 @@ class _RouteSelectionState extends State<RouteSelection> {
     }
   }
 
-  fetchEmail() async {
-    dynamic results = await context.read<Authenticate>().getEmail();
-
-    if (results == null) {
-      print('Unable to retrieve commuter info');
-    } else {
-      if (mounted) {
-        setState(() {
-          email = results;
-        });
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,6 +72,14 @@ class _RouteSelectionState extends State<RouteSelection> {
             bottomOpacity: 0.0,
             elevation: 0.0,
             iconTheme: IconThemeData(color: Colors.yellow[700]),
+            actions: <Widget>[
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
             title: Text('Byahe App',
                 style: TextStyle(
                     color: Colors.yellow[700], fontWeight: FontWeight.bold))),

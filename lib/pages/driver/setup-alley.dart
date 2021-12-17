@@ -29,7 +29,7 @@ class _SetupAlleyState extends State<SetupAlley> {
   String status;
   String driverPath;
   String driverPlate;
-  bool vehicleStatus;
+  var vehicleStatus;
   var alleyList = [];
   final locate.Location location = locate.Location();
   StreamSubscription<locate.LocationData> _locationSubscription;

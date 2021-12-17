@@ -45,9 +45,11 @@ class _ReserveDetailsState extends State<ReserveDetails> {
     if (result == null) {
       print('Unable to retrieve booking details (reserverdetails.dart)');
     } else {
-      setState(() {
-        bookingDetails = result;
-      });
+      if (mounted) {
+        setState(() {
+          bookingDetails = result;
+        });
+      }
     }
   }
 
@@ -59,6 +61,14 @@ class _ReserveDetailsState extends State<ReserveDetails> {
             bottomOpacity: 0.0,
             elevation: 0.0,
             iconTheme: IconThemeData(color: Colors.yellow[700]),
+            actions: <Widget>[
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
             title: Text('Byahe App',
                 style: TextStyle(
                     color: Colors.yellow[700], fontWeight: FontWeight.bold))),
@@ -268,9 +278,9 @@ class _ReserveDetailsState extends State<ReserveDetails> {
                                                         response = "Cancelled";
                                                         if (info['status'] !=
                                                             "Cancelled") {
-                                                          setState(() async {
+                                                          setState(() {
                                                             //isButtonDisabled = true;
-                                                            await context
+                                                            context
                                                                 .read<
                                                                     Authenticate>()
                                                                 .respondBooking(

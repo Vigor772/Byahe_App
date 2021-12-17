@@ -43,8 +43,7 @@ class _OnboardState extends State<Onboard> {
   }
 
   fetchOnboardPing() async {
-    dynamic result =
-        await context.read<Authenticate>().getAcceptedPingList(driverPlate);
+    dynamic result = await context.read<Authenticate>().getAcceptedPingList();
     if (result == null) {
       print('Unable to get Onboard Ping (onboard.dart)');
     } else {
@@ -114,45 +113,53 @@ class _OnboardState extends State<Onboard> {
           ),
           Container(
               child: Column(
-            children: commuterinfo
-                .map((commuter) => Container(
-                    decoration: BoxDecoration(
-                        color: Colors.yellow[700],
-                        borderRadius: BorderRadius.all(Radius.circular(5)),
-                        boxShadow: [
-                          BoxShadow(
-                              blurRadius: 10,
-                              color: Colors.grey,
-                              offset: Offset(3, 3)),
-                        ]),
-                    padding: EdgeInsets.symmetric(vertical: 10),
-                    margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Row(children: <Widget>[
-                            Container(
-                                padding: EdgeInsets.symmetric(horizontal: 10),
-                                child: CircleAvatar(
-                                  radius: 15,
-                                  backgroundImage:
-                                      AssetImage('assets/salac.jpg'),
-                                )),
-                            Container(
-                              child: Text(
-                                'ID: ' + commuter['commuter_id'],
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            )
-                          ]),
-                          Container(
-                            padding: EdgeInsets.symmetric(horizontal: 10),
-                            child: Image.asset(
-                              'assets/remove.png',
-                              width: 50,
-                            ),
-                          )
-                        ])))
+            children: getPingsOnboard
+                .map(
+                  (commuter) => (commuter['pinged_driver'] == driverPlate)
+                      ? Container(
+                          decoration: BoxDecoration(
+                              color: Colors.yellow[700],
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5)),
+                              boxShadow: [
+                                BoxShadow(
+                                    blurRadius: 10,
+                                    color: Colors.grey,
+                                    offset: Offset(3, 3)),
+                              ]),
+                          padding: EdgeInsets.symmetric(vertical: 10),
+                          margin:
+                              EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Row(children: <Widget>[
+                                  Container(
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 10),
+                                      child:
+                                          Icon(Icons.account_circle_outlined)),
+                                  Container(
+                                    child: Text(
+                                      'Commuter: ' + commuter['full_name'],
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  )
+                                ]),
+                                Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 10),
+                                  child: Image.asset(
+                                    'assets/remove.png',
+                                    width: 50,
+                                  ),
+                                )
+                              ]))
+                      : Container(
+                          padding:
+                              EdgeInsets.symmetric(vertical: 1, horizontal: 1),
+                        ),
+                )
                 .toList(),
           ))
         ])))));

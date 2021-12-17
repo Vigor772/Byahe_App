@@ -337,7 +337,6 @@ class Authenticate {
     var email;
     DocumentSnapshot usercat =
         await FirebaseFirestore.instance.collection('users').doc(useruid).get();
-
     email = usercat['email'];
     return email;
   }
@@ -449,14 +448,14 @@ class Authenticate {
             (onError) => print('Failed to Update Ping Status into Pending'));
   }
 
-  Future getPendingPingList(var vehicle_plate_number) async {
+  Future getPendingPingList(/*var vehicle_plate_number*/) async {
     List pingList = [];
     try {
       await FirebaseFirestore.instance
           .collection('users')
           .where('user_type', isEqualTo: 'Commuter')
           .where('ping_status', isEqualTo: 'Pending')
-          .where('pinged_driver', isEqualTo: vehicle_plate_number)
+          //.where('pinged_driver', isEqualTo: vehicle_plate_number)
           .get()
           .then((query) {
         query.docs.forEach((doc) {
@@ -480,14 +479,14 @@ class Authenticate {
             (onError) => print('Failed to update ping_status: $onError'));
   }
 
-  Future getAcceptedPingList(var vehicle_plate_number) async {
+  Future getAcceptedPingList() async {
     List pingList = [];
     try {
       await FirebaseFirestore.instance
           .collection('users')
           .where('user_type', isEqualTo: "Commuter")
           .where('ping_status', isEqualTo: "Onboard")
-          .where('pinged_driver', isEqualTo: vehicle_plate_number)
+          //.where('pinged_driver', isEqualTo: vehicle_plate_number)
           .get()
           .then((query) {
         query.docs.forEach((doc) {

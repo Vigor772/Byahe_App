@@ -79,14 +79,14 @@ class _MapState extends State<Map> {
 
   void updateMarkerCommuter(
       locate.LocationData newLocalData, Uint8List imageData2) {
-    //LatLng commuter = LatLng(latitude, longitude);
+    LatLng commuter = LatLng(latitude, longitude);
     LatLng latlng = LatLng(newLocalData.latitude, newLocalData.longitude);
     //print(commuter);
     print(latlng);
     this.setState(() {
       marker2 = Marker(
           markerId: MarkerId(email.toString()),
-          position: /*commuter,*/ latlng,
+          position: commuter, //latlng,
           rotation: newLocalData.heading,
           infoWindow: InfoWindow(title: '$email pinged'),
           draggable: false,
@@ -239,13 +239,22 @@ class _MapState extends State<Map> {
                 })
             : true,
         child: Scaffold(
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              bottomOpacity: 0.0,
+              elevation: 0.0,
+              iconTheme: IconThemeData(color: Colors.yellow[700]),
+              title: Text('Byahe App',
+                  style: TextStyle(
+                      color: Colors.yellow[700], fontWeight: FontWeight.bold)),
+            ),
             backgroundColor: state ? Colors.grey[200] : null,
             body: SingleChildScrollView(
                 child: SafeArea(
                     child: Container(
               child: Column(
                 children: <Widget>[
-                  //Container(height: 50, child: TopBarMod()), //MAIN TOP BAR
+                  // Container(height: 50, child: TopBarMod()), //MAIN TOP BAR
                   Container(
                       decoration: BoxDecoration(
                           border: Border.all(
@@ -263,9 +272,9 @@ class _MapState extends State<Map> {
                         onMapCreated: (GoogleMapController controller) async {
                           _controller = controller;
                           getCurrentLocation();
-                          /*if (MyApp.ping == true) {
+                          if (MyApp.ping == true) {
                             getCommuterLocation();
-                          }*/
+                          }
                         },
                       )),
                   Container(
@@ -432,8 +441,9 @@ class _MapState extends State<Map> {
                                           } else if (currentUserType ==
                                               "Commuter") {
                                             setState(() {
-                                              //savePing();
-                                              getCommuterLocation();
+                                              savePing();
+                                              getCoordinates();
+                                              //getCommuterLocation();
                                               state = true;
                                               context
                                                   .read<Authenticate>()
@@ -478,7 +488,7 @@ class _MapState extends State<Map> {
             )))));
   }
 
-  /*Future<void> savePing() async {
+  Future<void> savePing() async {
     String useruid = FirebaseAuth.instance.currentUser.uid;
     try {
       final locate.LocationData currentLocation =
@@ -490,9 +500,9 @@ class _MapState extends State<Map> {
     } catch (e) {
       print(e.toString());
     }
-  }*/
+  }
 
-  /*getCoordinates() async {
+  getCoordinates() async {
     Uint8List imageData2 = await getMarker2();
     setState(() {
       usersMarkers.add(Marker(
@@ -503,7 +513,7 @@ class _MapState extends State<Map> {
           ),
           icon: BitmapDescriptor.fromBytes(imageData2)));
     });
-  }*/
+  }
 
   cancelPing() {
     Marker mark = usersMarkers

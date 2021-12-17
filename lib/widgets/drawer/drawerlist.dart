@@ -2,6 +2,7 @@ import 'package:byahe_app/main.dart';
 import 'package:byahe_app/pages/commuter/locationselection.dart';
 import 'package:byahe_app/pages/commuter/reservedetails.dart';
 import 'package:byahe_app/pages/driver/onboard.dart';
+import 'package:byahe_app/pages/login/loginpage.dart';
 import 'package:byahe_app/pages/login_auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -57,21 +58,25 @@ class _DrawerListState extends State<DrawerList> {
                           builder: (context) => ReserveDetails()));
                     },
                   ),
-                  ListTile(
-                    leading: Icon(Icons.location_searching),
-                    title: Text('Selection'),
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => LocationSelection()));
-                    },
-                  ),
+                  // ListTile(
+                  //   leading: Icon(Icons.location_searching),
+                  //   title: Text('Selection'),
+                  //   onTap: () {
+                  //     Navigator.of(context).push(MaterialPageRoute(
+                  //         builder: (context) => LocationSelection()));
+                  //   },
+                  // ),
                   ListTile(
                     leading: Icon(Icons.logout),
                     title: Text('Log Out'),
                     onTap: () {
                       String status = "OFFLINE";
+                      //Navigator.pop(context);
                       context.read<Authenticate>().updateUserStatus(status);
+                      Navigator.of(context).pushReplacementNamed('/');
                       FirebaseAuth.instance.signOut();
+                      /*Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) => LoginPage()));*/
                     },
                   ),
                 ],
