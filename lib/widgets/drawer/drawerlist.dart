@@ -54,7 +54,7 @@ class _DrawerListState extends State<DrawerList> {
                     leading: Icon(Icons.book_online),
                     title: Text('Booking Requests'),
                     onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (context) => ReserveDetails()));
                     },
                   ),
@@ -87,11 +87,11 @@ class _DrawerListState extends State<DrawerList> {
                     child: toOnboard(),
                     onTap: () {
                       if (MyApp.inboard == false) {
-                        Navigator.of(context).push(
+                        Navigator.of(context).pushReplacement(
                             MaterialPageRoute(builder: (context) => Onboard()));
                         MyApp.inboard = true;
                       } else {
-                        Navigator.of(context).push(MaterialPageRoute(
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(
                             builder: (context) => LocationSelection()));
                         MyApp.inboard = false;
                       }

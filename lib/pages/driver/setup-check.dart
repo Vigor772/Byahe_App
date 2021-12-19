@@ -22,7 +22,8 @@ class _SetupCheckState extends State<SetupCheck> {
   int total_drivers_route = 10;
   var total_drivers;
   var currentDriverRoute;
-  var activeSameRoute;
+  List activeSameRoute = [];
+  var sameRouteCounter = 0;
 
   @override
   initState() {
@@ -60,9 +61,8 @@ class _SetupCheckState extends State<SetupCheck> {
   }
 
   fetchActiveDriversRoute() async {
-    dynamic result = await context
-        .read<Authenticate>()
-        .getTotalDriversInRoute(currentDriverRoute);
+    dynamic result =
+        await context.read<Authenticate>().getTotalDriversInRoute();
     if (result == null) {
       print('Unable to retreive activedriverRoute (setup-check.dart)');
     } else {
@@ -116,8 +116,9 @@ class _SetupCheckState extends State<SetupCheck> {
                     height: 70,
                     child: ElevatedButton(
                         onPressed: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => SetupAlley()));
+                          Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                  builder: (context) => SetupAlley()));
                         },
                         style: ElevatedButton.styleFrom(
                             onPrimary: Colors.yellow[700],
@@ -130,8 +131,9 @@ class _SetupCheckState extends State<SetupCheck> {
                     height: 70,
                     child: ElevatedButton(
                         onPressed: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => SetupCheck()));
+                          Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                  builder: (context) => SetupCheck()));
                         },
                         style: ElevatedButton.styleFrom(
                           primary: Colors.yellow[700],
@@ -146,7 +148,7 @@ class _SetupCheckState extends State<SetupCheck> {
               alignment: Alignment.centerRight,
               child: InkWell(
                   onTap: () {
-                    Navigator.of(context).push(
+                    Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (context) => SetupCheck()));
                   },
                   child: Image.asset(
@@ -155,7 +157,7 @@ class _SetupCheckState extends State<SetupCheck> {
                   ))),
           Container(
             child: Column(
-              children: <Widget>[
+              children: [
                 Container(
                     padding: EdgeInsets.all(30),
                     child: Column(children: <Widget>[
@@ -175,21 +177,34 @@ class _SetupCheckState extends State<SetupCheck> {
                     ])),
                 Container(
                   padding: EdgeInsets.all(30),
-                  child: Column(children: <Widget>[
-                    Text('TOTAL DRIVERS ACTIVE IN THE SAME ROUTE',
-                        style: TextStyle(
-                            color: Colors.yellow[700],
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold)),
-                    Text(
-                      activeSameRoute.toString(),
-                      style: TextStyle(
-                          decoration: TextDecoration.underline,
-                          color: Colors.yellow[700],
-                          fontSize: 50,
-                          fontWeight: FontWeight.bold),
-                    )
-                  ]),
+                  child: Column(
+                      children: (activeSameRoute != null)
+                          ? activeSameRoute
+                              .map(
+                                (totalSame) => (totalSame != null &&
+                                        totalSame['jeepney_line'] ==
+                                            currentDriverRoute)
+                                    ? Column(children: [
+                                        Text(
+                                            'TOTAL DRIVERS ACTIVE IN THE SAME ROUTE',
+                                            style: TextStyle(
+                                                color: Colors.yellow[700],
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold)),
+                                        Text(
+                                          (sameRouteCounter++).toString(),
+                                          style: TextStyle(
+                                              decoration:
+                                                  TextDecoration.underline,
+                                              color: Colors.yellow[700],
+                                              fontSize: 50,
+                                              fontWeight: FontWeight.bold),
+                                        )
+                                      ])
+                                    : Text(""),
+                              )
+                              .toList()
+                          : activeSameRoute.isEmpty),
                 )
               ],
             ),

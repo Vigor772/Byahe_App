@@ -140,18 +140,31 @@ class _OnboardState extends State<Onboard> {
                                       child:
                                           Icon(Icons.account_circle_outlined)),
                                   Container(
-                                    child: Text(
-                                      'Commuter: ' + commuter['full_name'],
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
+                                    child: (commuter['full_name'] != null)
+                                        ? Text(
+                                            'Commuter: ' +
+                                                commuter['full_name'],
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                          )
+                                        : Text('Fetching Name...',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold)),
                                   )
                                 ]),
-                                Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 10),
-                                  child: Image.asset(
-                                    'assets/remove.png',
-                                    width: 50,
+                                InkWell(
+                                  onTap: () {
+                                    context
+                                        .read<Authenticate>()
+                                        .resetPing(commuter['uid']);
+                                  },
+                                  child: Container(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 10),
+                                    child: Image.asset(
+                                      'assets/remove.png',
+                                      width: 50,
+                                    ),
                                   ),
                                 )
                               ]))

@@ -55,7 +55,7 @@ class _PendingState extends State<Pending> {
     }
   }
 
-  Future getAddressFromCoordinates(var latitude, var longitude) async {
+  /*Future getAddressFromCoordinates(var latitude, var longitude) async {
     List<Placemark> placemarks =
         await placemarkFromCoordinates(latitude, longitude);
     Placemark place = placemarks[0];
@@ -63,7 +63,7 @@ class _PendingState extends State<Pending> {
     setState(() {
       placeValue = '${place.street}, ${place.locality}';
     });
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -113,102 +113,99 @@ class _PendingState extends State<Pending> {
                     ]),
               )),*/
           Container(
-              child: new ListView.builder(
-                  scrollDirection: Axis.vertical,
-                  shrinkWrap: true,
-                  itemCount: getPings.length,
-                  itemBuilder: (context, index) {
-                    if (getPings[index]['pinged_driver'] == driverPlate) {
-                      getAddressFromCoordinates(getPings[index]['latitude'],
-                          getPings[index]['longitude']);
-                      print(placeValue);
-                      return Container(
-                          width: MediaQuery.of(context).size.width,
-                          decoration: BoxDecoration(
-                              color: Colors.yellow[700],
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(5)),
-                              boxShadow: [
-                                BoxShadow(
-                                    blurRadius: 10,
-                                    color: Colors.grey,
-                                    offset: Offset(3, 3)),
-                              ]),
-                          padding: EdgeInsets.symmetric(vertical: 10),
-                          margin:
-                              EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          child: Row(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: <Widget>[
-                                Row(children: <Widget>[
-                                  Container(
-                                      padding:
-                                          EdgeInsets.symmetric(horizontal: 10),
-                                      child: Icon(Icons.account_circle)),
-                                  Container(
-                                    child: Column(
-                                      children: [
-                                        (placeValue != null)
-                                            ? Text(
-                                                placeValue,
-                                                style: TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              )
-                                            : Text('Fetching Location...',
-                                                style: TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                        (getPings[index]['full_name'] != null)
-                                            ? Text(getPings[index]['full_name'],
-                                                style: TextStyle(fontSize: 10))
-                                            : Text('Fetching Name',
-                                                style: TextStyle(fontSize: 10)),
-                                      ],
+              child: Column(
+            children: getPings
+                .map((commuter) => (commuter['pinged_driver'] == driverPlate)
+                    ? Container(
+                        decoration: BoxDecoration(
+                            color: Colors.yellow[700],
+                            borderRadius: BorderRadius.all(Radius.circular(5)),
+                            boxShadow: [
+                              BoxShadow(
+                                  blurRadius: 10,
+                                  color: Colors.grey,
+                                  offset: Offset(3, 3)),
+                            ]),
+                        padding: EdgeInsets.symmetric(vertical: 10),
+                        margin:
+                            EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Row(children: <Widget>[
+                                Container(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 10),
+                                    child: Icon(Icons.account_circle_rounded)),
+                                Column(
+                                  children: [
+                                    Container(
+                                      child: (commuter['place_in_words'] !=
+                                              null)
+                                          ? Text(
+                                              commuter['place_in_words'],
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 12),
+                                            )
+                                          : Text('Fetching Location...',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 12)),
                                     ),
-                                  )
-                                ]),
-                                Row(children: <Widget>[
-                                  InkWell(
-                                    onTap: () {
-                                      var ping_status;
-                                      ping_status = 'Onboard';
-                                      context.read<Authenticate>().pingResponse(
-                                          getPings[index]['uid'], ping_status);
-                                    },
-                                    child: Container(
-                                      padding:
-                                          EdgeInsets.symmetric(horizontal: 5),
-                                      child: Image.asset(
-                                        'assets/check.png',
-                                        width: 50,
-                                      ),
+                                    Container(
+                                      child: (commuter['full_name'] != null)
+                                          ? Text(commuter['full_name'],
+                                              style: TextStyle(fontSize: 10))
+                                          : Text("Fetching Name...",
+                                              style: TextStyle(fontSize: 10)),
+                                    ),
+                                  ],
+                                )
+                              ]),
+                              Row(children: <Widget>[
+                                InkWell(
+                                  onTap: () {
+                                    var ping_status;
+                                    ping_status = 'Onboard';
+                                    context.read<Authenticate>().pingResponse(
+                                        commuter['uid'], ping_status);
+                                  },
+                                  child: Container(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 5),
+                                    child: Image.asset(
+                                      'assets/check.png',
+                                      width: 50,
                                     ),
                                   ),
-                                  InkWell(
-                                    onTap: () {
-                                      var ping_status;
-                                      ping_status = "Rejected";
-                                      context.read<Authenticate>().pingResponse(
-                                          getPings[index]['uid'], ping_status);
-                                    },
-                                    child: Container(
-                                      padding:
-                                          EdgeInsets.symmetric(horizontal: 5),
-                                      child: Image.asset(
-                                        'assets/reject.png',
-                                        width: 50,
-                                      ),
+                                ),
+                                InkWell(
+                                  onTap: () {
+                                    var ping_status;
+                                    ping_status = "Rejected";
+                                    context.read<Authenticate>().pingResponse(
+                                        commuter['uid'], ping_status);
+                                  },
+                                  child: Container(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 5),
+                                    child: Image.asset(
+                                      'assets/reject.png',
+                                      width: 50,
                                     ),
-                                  )
-                                ])
-                              ]));
-                    }
-                    return Container(
-                      padding: EdgeInsets.symmetric(vertical: 1, horizontal: 1),
-                    );
-                  }))
+                                  ),
+                                )
+                              ])
+                            ]))
+                    : Container(
+                        padding:
+                            EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                        child: Center(
+                            child: Text('No Pending Pings',
+                                style: TextStyle(color: Colors.grey)))))
+                .toList(),
+          ))
         ])))));
   }
 }

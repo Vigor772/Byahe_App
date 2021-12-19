@@ -322,6 +322,15 @@ class Authenticate {
     return plate;
   }
 
+  Future getPingStatus() async {
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    var ping_status;
+    DocumentSnapshot usercat =
+        await FirebaseFirestore.instance.collection('users').doc(useruid).get();
+    ping_status = usercat['ping_status'];
+    return ping_status;
+  }
+
   Future getLong() async {
     String useruid = FirebaseAuth.instance.currentUser.uid;
     var longitude;
@@ -373,11 +382,14 @@ class Authenticate {
   Future getTotalDriversRegistered() async {
     var counter = 0;
     try {
-      await FirebaseFirestore.instance.collection('users').get().then((query) {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .where('user_type', isEqualTo: "Driver")
+          .where('status', isEqualTo: "ONLINE")
+          .get()
+          .then((query) {
         query.docs.forEach((element) {
-          if (element['user_type'] == 'Driver') {
-            counter++;
-          }
+          counter++;
         });
       });
       return counter;
@@ -386,23 +398,20 @@ class Authenticate {
     }
   }
 
-  Future getTotalDriversInRoute(var jeepney_line) async {
-    var counter = 0;
+  Future getTotalDriversInRoute() async {
+    List totalDriversInRoute = [];
     try {
       await FirebaseFirestore.instance
           .collection('users')
-          .where('jeepney_line', isEqualTo: jeepney_line)
+          .where('user_type', isEqualTo: "Driver")
+          .where('status', isEqualTo: 'ONLINE')
           .get()
           .then((query) {
-        query.docs.forEach((element) {
-          if (element['user_type'] == 'Driver') {
-            if (element['status'] == 'ONLINE') {
-              counter++;
-            }
-          }
+        query.docs.forEach((doc) {
+          totalDriversInRoute.add(doc.data());
         });
       });
-      return counter;
+      return totalDriversInRoute;
     } catch (e) {
       return e.toString();
     }
@@ -425,8 +434,11 @@ class Authenticate {
         .collection('users')
         .doc(useruid)
         .update({
+          //'latitude': null,
+          //'longitude': null,
           'ping_status': ping_status,
           'pinged_driver': null,
+          'place_in_words': null,
         })
         .then((value) => print('Updated Ping Status: Cancelled'))
         .catchError((onError) =>
@@ -477,6 +489,20 @@ class Authenticate {
             print('Successfully updated ping status into $ping_status'))
         .catchError(
             (onError) => print('Failed to update ping_status: $onError'));
+  }
+
+  Future resetPing(var user_uid) async {
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(user_uid)
+        .update({
+          'ping_status': null,
+          'pinged_driver': null,
+          'place_in_words': null,
+        })
+        .then((value) => print('Successfully reset Ping'))
+        .catchError((onError) =>
+            print('Failed to reset Ping (onboard.dart): $onError'));
   }
 
   Future getAcceptedPingList() async {

@@ -9,6 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:byahe_app/widgets/topbarmod.dart';
 import 'package:flutter/services.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart' as locate;
 import 'package:provider/src/provider.dart';
@@ -28,10 +29,10 @@ class _MapState extends State<Map> {
   var latitude;
   var longitude;
   var email;
-  //var queueStatus;
+  var placeValue;
+  var commuter_ping;
   var currentUserType;
   bool state = false;
-  List commuterData = [];
   _MapState(this.routeData);
   StreamSubscription _locationSubscription;
   locate.Location _locationTracker = locate.Location();
@@ -164,6 +165,7 @@ class _MapState extends State<Map> {
     fetchLong();
     fetchEmail();
     fetchCurrentUser();
+    fetchPingStatus();
   }
 
   void dispose() {
@@ -197,6 +199,19 @@ class _MapState extends State<Map> {
       if (mounted) {
         setState(() {
           longitude = results;
+        });
+      }
+    }
+  }
+
+  fetchPingStatus() async {
+    dynamic result = await context.read<Authenticate>().getPingStatus();
+    if (result == null) {
+      print('Unable to retreive commuter ping status (map.dart)');
+    } else {
+      if (mounted) {
+        setState(() {
+          commuter_ping = result;
         });
       }
     }
@@ -281,18 +296,42 @@ class _MapState extends State<Map> {
                       child: Column(
                     children: <Widget>[
                       Container(
-                          padding: EdgeInsets.only(top: 10),
-                          child: state
-                              ? Text('PINGING ...',
-                                  style: TextStyle(
-                                      color: Colors.red,
-                                      fontSize: 25,
-                                      fontWeight: FontWeight.bold))
-                              : null),
+                          margin: EdgeInsets.all(10),
+                          alignment: Alignment.centerRight,
+                          child: InkWell(
+                              onTap: () {
+                                Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(
+                                        builder: (context) => Map(routeData)));
+                              },
+                              child: Image.asset(
+                                'assets/reload.png',
+                                width: 20,
+                                height: 20,
+                              ))),
                       Container(
-                          child: state
-                              ? Image.asset('assets/car_ride_tester.gif',
-                                  height: 100)
+                          padding: EdgeInsets.only(top: 10),
+                          child: (commuter_ping != "Onboard")
+                              ? state
+                                  ? Text('PINGING ...',
+                                      style: TextStyle(
+                                          color: Colors.red,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold))
+                                  : null
+                              : Text('ON BOARD',
+                                  style: TextStyle(
+                                      color: Colors.green,
+                                      fontSize: 25,
+                                      fontWeight: FontWeight.bold))),
+                      Container(
+                          child: (commuter_ping != "Onboard")
+                              ? state
+                                  ? Image.asset('assets/car_ride_tester.gif',
+                                      height: 100)
+                                  : Image.asset(
+                                      'assets/undraw_fast_car_p4cu-removebg-preview.png',
+                                      height: 100)
                               : Image.asset(
                                   'assets/undraw_fast_car_p4cu-removebg-preview.png',
                                   height: 100)),
@@ -385,102 +424,110 @@ class _MapState extends State<Map> {
                             ])
                           ])),
                       Container(
-                          padding: EdgeInsets.symmetric(horizontal: 25),
-                          child: state
-                              ? Container(
-                                  height: 50,
-                                  width: 200,
-                                  margin: EdgeInsets.all(10),
-                                  child: ElevatedButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          cancelPing();
-                                          context
-                                              .read<Authenticate>()
-                                              .clearPing();
-                                          MyApp.ping = false;
-                                          state = false;
-                                        });
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                          primary: Colors.redAccent,
-                                          onPrimary: Colors.white,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                                12), // <-- Radius
-                                          ),
-                                          side: BorderSide(
-                                              color: Colors.redAccent)),
-                                      child: Text('CANCEL NOW!')))
-                              : Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: <Widget>[
-                                    ElevatedButton(
+                        padding: EdgeInsets.symmetric(horizontal: 25),
+                        child: (commuter_ping != "Onboard")
+                            ? state
+                                ? Container(
+                                    height: 50,
+                                    width: 200,
+                                    margin: EdgeInsets.all(10),
+                                    child: ElevatedButton(
                                         onPressed: () {
-                                          if (currentUserType == "Driver") {
-                                            showDialog(
-                                                context: context,
-                                                builder: (context) {
-                                                  return AlertDialog(
-                                                    title: Text(
-                                                        "Driver can't ping"),
-                                                    content: Text(
-                                                        'This function is for commuters only'),
-                                                    actions: <Widget>[
-                                                      TextButton(
-                                                        onPressed: () {
-                                                          Navigator.pop(
-                                                              context);
-                                                        },
-                                                        child: Text('CLOSE'),
-                                                      )
-                                                    ],
-                                                  );
-                                                });
-                                          } else if (currentUserType ==
-                                              "Commuter") {
-                                            setState(() {
-                                              savePing();
-                                              getCoordinates();
-                                              //getCommuterLocation();
-                                              state = true;
-                                              context
-                                                  .read<Authenticate>()
-                                                  .updatePing(routeData[
-                                                      'vehicle_plate_number']);
-                                              MyApp.ping = true;
-                                            });
-                                          }
+                                          setState(() {
+                                            cancelPing();
+                                            context
+                                                .read<Authenticate>()
+                                                .clearPing();
+                                            MyApp.ping = false;
+                                            state = false;
+                                          });
                                         },
                                         style: ElevatedButton.styleFrom(
-                                            primary: Colors.white,
-                                            onPrimary: Colors.yellow[700],
+                                            primary: Colors.redAccent,
+                                            onPrimary: Colors.white,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      12), // <-- Radius
+                                            ),
                                             side: BorderSide(
-                                                color: Colors.yellow[700])),
-                                        child: Text(
-                                          "QUEUE NOW!",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold),
-                                        )),
-                                    ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      ReserveVehicle(
-                                                          routeData)));
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                            onPrimary: Colors.yellow[700],
-                                            primary: Colors.white,
-                                            side: BorderSide(
-                                                color: Colors.yellow[700])),
-                                        child: Text("RESERVE NOW!",
+                                                color: Colors.redAccent)),
+                                        child: Text('CANCEL NOW!')))
+                                : Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: <Widget>[
+                                      ElevatedButton(
+                                          onPressed: () {
+                                            if (currentUserType == "Driver") {
+                                              showDialog(
+                                                  context: context,
+                                                  builder: (context) {
+                                                    return AlertDialog(
+                                                      title: Text(
+                                                          "Driver can't ping"),
+                                                      content: Text(
+                                                          'This function is for commuters only'),
+                                                      actions: <Widget>[
+                                                        TextButton(
+                                                          onPressed: () {
+                                                            Navigator.pop(
+                                                                context);
+                                                          },
+                                                          child: Text('CLOSE'),
+                                                        )
+                                                      ],
+                                                    );
+                                                  });
+                                            } else if (currentUserType ==
+                                                "Commuter") {
+                                              setState(() {
+                                                savePing();
+                                                convertLatLng();
+                                                getCoordinates();
+                                                //getCommuterLocation();
+                                                state = true;
+                                                context
+                                                    .read<Authenticate>()
+                                                    .updatePing(routeData[
+                                                        'vehicle_plate_number']);
+                                                MyApp.ping = true;
+                                              });
+                                            }
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                              primary: Colors.white,
+                                              onPrimary: Colors.yellow[700],
+                                              side: BorderSide(
+                                                  color: Colors.yellow[700])),
+                                          child: Text(
+                                            "QUEUE NOW!",
                                             style: TextStyle(
-                                                fontWeight: FontWeight.bold)))
-                                  ],
-                                ))
+                                                fontWeight: FontWeight.bold),
+                                          )),
+                                      ElevatedButton(
+                                          onPressed: () {
+                                            Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        ReserveVehicle(
+                                                            routeData)));
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                              onPrimary: Colors.yellow[700],
+                                              primary: Colors.white,
+                                              side: BorderSide(
+                                                  color: Colors.yellow[700])),
+                                          child: Text("RESERVE NOW!",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold)))
+                                    ],
+                                  )
+                            : Container(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: 1, horizontal: 1),
+                              ),
+                      )
                     ],
                   ))
                 ],
@@ -496,6 +543,23 @@ class _MapState extends State<Map> {
       await FirebaseFirestore.instance.collection('users').doc(useruid).set({
         'latitude': currentLocation.latitude,
         'longitude': currentLocation.longitude,
+      }, SetOptions(merge: true));
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  Future convertLatLng() async {
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    try {
+      final locate.LocationData currentLocation =
+          await _locationTracker.getLocation();
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+          currentLocation.latitude, currentLocation.longitude);
+      Placemark place = placemarks[0];
+      placeValue = '${place.street}, ${place.locality}';
+      await FirebaseFirestore.instance.collection('users').doc(useruid).set({
+        'place_in_words': placeValue,
       }, SetOptions(merge: true));
     } catch (e) {
       print(e.toString());

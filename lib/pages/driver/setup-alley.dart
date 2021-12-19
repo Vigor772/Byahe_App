@@ -255,8 +255,9 @@ class _SetupAlleyState extends State<SetupAlley> {
                     height: 70,
                     child: ElevatedButton(
                         onPressed: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => SetupCheck()));
+                          Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                  builder: (context) => SetupCheck()));
                         },
                         style: ElevatedButton.styleFrom(
                             onPrimary: Colors.yellow[700],
