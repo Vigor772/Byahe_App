@@ -206,6 +206,7 @@ class _MapState extends State<Map> {
 
   fetchPingStatus() async {
     dynamic result = await context.read<Authenticate>().getPingStatus();
+
     if (result == null) {
       print('Unable to retreive commuter ping status (map.dart)');
     } else {
@@ -309,21 +310,28 @@ class _MapState extends State<Map> {
                                 width: 20,
                                 height: 20,
                               ))),
-                      Container(
-                          padding: EdgeInsets.only(top: 10),
-                          child: (commuter_ping != "Onboard")
-                              ? state
-                                  ? Text('PINGING ...',
-                                      style: TextStyle(
-                                          color: Colors.red,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold))
-                                  : null
-                              : Text('ON BOARD',
-                                  style: TextStyle(
-                                      color: Colors.green,
-                                      fontSize: 25,
-                                      fontWeight: FontWeight.bold))),
+                      Column(children: [
+                        if (commuter_ping != "Onboard" &&
+                            commuter_ping != "Rejected")
+                          if (state)
+                            Text('PINGING ...',
+                                style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 25,
+                                    fontWeight: FontWeight.bold)),
+                        if (commuter_ping == "Rejected")
+                          Text('Rejected',
+                              style: TextStyle(
+                                  color: Colors.redAccent,
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.bold)),
+                        if (commuter_ping == "Onboard")
+                          Text('Onboard',
+                              style: TextStyle(
+                                  color: Colors.green,
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.bold))
+                      ]),
                       Container(
                           child: (commuter_ping != "Onboard")
                               ? state

@@ -59,7 +59,6 @@ class _PendingState extends State<Pending> {
     List<Placemark> placemarks =
         await placemarkFromCoordinates(latitude, longitude);
     Placemark place = placemarks[0];
-
     setState(() {
       placeValue = '${place.street}, ${place.locality}';
     });

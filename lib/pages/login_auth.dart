@@ -39,7 +39,7 @@ class Authenticate {
           "user_type": userType,
           'queue': queue,
           'status': 'ONLINE',
-          'state': state,
+          //'state': state,
           "email": email,
           "password": password,
         });

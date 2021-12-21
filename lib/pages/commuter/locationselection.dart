@@ -108,7 +108,7 @@ class _LocationSelectionState extends State<LocationSelection> {
                             color: Colors.yellow[700],
                             child: ListTile(
                               onTap: () {
-                                Navigator.pushReplacement(
+                                Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                         builder: (context) => RouteSelection(
