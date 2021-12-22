@@ -22,12 +22,14 @@ class _PendingState extends State<Pending> {
   List getPings = [];
   var driverPlate;
   var placeValue;
+  int current_occupied;
 
   @override
   initState() {
     super.initState();
     fetchDriverPlate();
     fetchPingList();
+    fetchCurrentOccupied();
   }
 
   fetchDriverPlate() async {
@@ -38,6 +40,19 @@ class _PendingState extends State<Pending> {
       if (mounted) {
         setState(() {
           driverPlate = result;
+        });
+      }
+    }
+  }
+
+  fetchCurrentOccupied() async {
+    dynamic result = await context.read<Authenticate>().getOccupied();
+    if (result == null) {
+      print('Unable to retreive current occupied (pending.dart)');
+    } else {
+      if (mounted) {
+        setState(() {
+          current_occupied = result;
         });
       }
     }
@@ -169,6 +184,12 @@ class _PendingState extends State<Pending> {
                                     ping_status = 'Onboard';
                                     context.read<Authenticate>().pingResponse(
                                         commuter['uid'], ping_status);
+                                    setState(() {
+                                      current_occupied++;
+                                    });
+                                    context
+                                        .read<Authenticate>()
+                                        .updateOccupied(current_occupied);
                                   },
                                   child: Container(
                                     padding:

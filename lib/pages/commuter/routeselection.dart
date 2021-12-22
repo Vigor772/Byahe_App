@@ -167,9 +167,19 @@ class _RouteSelectionState extends State<RouteSelection> {
                                     routeListDetails[index]['last_name'],
                                     style: TextStyle(color: Colors.white)),
                                 leading: Icon(Icons.place, color: Colors.white),
-                                trailing: Text(
-                                    routeListDetails[index]['status'],
-                                    style: TextStyle(color: Colors.white)),
+                                trailing: (routeListDetails[index]['status'] ==
+                                        "ONLINE")
+                                    ? Text(
+                                        routeListDetails[index]
+                                                    ['current_occupied']
+                                                .toString() +
+                                            "/" +
+                                            routeListDetails[index]
+                                                    ['seats_avail']
+                                                .toString(),
+                                        style: TextStyle(color: Colors.white))
+                                    : Text(routeListDetails[index]['status'],
+                                        style: TextStyle(color: Colors.white)),
                               ));
                         }),
                   )

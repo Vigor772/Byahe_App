@@ -398,7 +398,7 @@ class _MapState extends State<Map> {
                                             fontWeight: FontWeight.bold),
                                       ),
                                       Text(
-                                        "5/${routeData['seats_avail']}",
+                                        "${routeData['current_occupied'].toString()}/${routeData['seats_avail'].toString()}",
                                         style: TextStyle(
                                             fontSize: 10,
                                             color: Colors.green,

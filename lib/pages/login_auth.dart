@@ -105,6 +105,7 @@ class Authenticate {
     String route_path;
     String seats_avail;
     bool queue = false;
+    int current_occupied = 0;
     try {
       await _auth
           .createUserWithEmailAndPassword(email: email, password: password)
@@ -125,6 +126,7 @@ class Authenticate {
           'mobile_number': mobnum,
           'vehicle_plate_number': platenum,
           'vehicle_status': vehicle_status,
+          'current_occupied': current_occupied,
           'queue': queue,
           'broadcast': broadcast,
           'status': status,
@@ -523,5 +525,22 @@ class Authenticate {
     } catch (e) {
       return e.toString();
     }
+  }
+
+  Future<void> updateOccupied(int current_occupied) async {
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+
+    await FirebaseFirestore.instance.collection('users').doc(useruid).set({
+      "current_occupied": current_occupied,
+    }, SetOptions(merge: true));
+  }
+
+  Future getOccupied() async {
+    var current_occupied;
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    DocumentSnapshot usercat =
+        await FirebaseFirestore.instance.collection('users').doc(useruid).get();
+    current_occupied = usercat['current_occupied'];
+    return current_occupied;
   }
 }

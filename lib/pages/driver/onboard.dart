@@ -19,6 +19,7 @@ class Onboard extends StatefulWidget {
 class _OnboardState extends State<Onboard> {
   int jeepcapacity = 12;
   var driverPlate;
+  int current_occupied;
   List getPingsOnboard = [];
 
   // ignore: missing_return
@@ -40,6 +41,7 @@ class _OnboardState extends State<Onboard> {
     super.initState();
     fetchDriverPlate();
     fetchOnboardPing();
+    fetchCurrentOccupied();
   }
 
   fetchOnboardPing() async {
@@ -50,6 +52,19 @@ class _OnboardState extends State<Onboard> {
       if (mounted) {
         setState(() {
           getPingsOnboard = result;
+        });
+      }
+    }
+  }
+
+  fetchCurrentOccupied() async {
+    dynamic result = await context.read<Authenticate>().getOccupied();
+    if (result == null) {
+      print('Unable to retreive current occupied (onboard.dart)');
+    } else {
+      if (mounted) {
+        setState(() {
+          current_occupied = result;
         });
       }
     }
@@ -157,6 +172,12 @@ class _OnboardState extends State<Onboard> {
                                     context
                                         .read<Authenticate>()
                                         .resetPing(commuter['uid']);
+                                    setState(() {
+                                      current_occupied--;
+                                    });
+                                    context
+                                        .read<Authenticate>()
+                                        .updateOccupied(current_occupied);
                                   },
                                   child: Container(
                                     padding:
