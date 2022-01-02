@@ -16,6 +16,7 @@ class ReserveDetails extends StatefulWidget {
 
 class _ReserveDetailsState extends State<ReserveDetails> {
   var bookingDetails = [];
+  Stream<QuerySnapshot> bookings;
   var name;
   var fnamePlate;
   bool isButtonDisabled = false;
@@ -51,6 +52,13 @@ class _ReserveDetailsState extends State<ReserveDetails> {
         });
       }
     }
+  }
+
+  fetchBookings(commuter_name) {
+    Stream<QuerySnapshot> bookings = FirebaseFirestore.instance
+        .collection('bookings')
+        .where('customer_name', isEqualTo: commuter_name)
+        .snapshots();
   }
 
   @override
@@ -92,224 +100,256 @@ class _ReserveDetailsState extends State<ReserveDetails> {
                     style: TextStyle(color: Colors.yellow[700])),
               )),
           Container(
-              child: Column(
-                  children: bookingDetails
-                      .map((info) => InkWell(
-                          child: (info['customer_name'] == name &&
-                                  info['customer_name'] != null)
-                              ? Container(
-                                  decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(15)),
-                                      border: Border.all(
-                                          width: 2, color: Colors.yellow[700]),
-                                      boxShadow: [
-                                        BoxShadow(
-                                            blurRadius: 10,
-                                            color: Colors.grey,
-                                            offset: Offset(3, 3)),
-                                      ]),
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 10, horizontal: 10),
-                                  margin: EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 5),
-                                  child: Column(children: <Widget>[
-                                    Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: <Widget>[
-                                          Row(
-                                            children: [
-                                              Text(
-                                                "Status: ",
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 12),
-                                              ),
-                                              (info['status'] != "Cancelled")
-                                                  ? Text(info['status'],
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 12,
-                                                          color: Colors.yellow))
-                                                  : Text(info['status'],
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 12,
-                                                          color: Colors.red)),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              Text(
-                                                "Driver Name: ",
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 12),
-                                              ),
-                                              Text(info['driver_name'],
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 12,
-                                                  )),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              Text(
-                                                "Jeepney Plate No: ",
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 12),
-                                              ),
-                                              Text(info['plate_reference'],
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 12,
-                                                  )),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              Text(
-                                                "Customer's Name: ",
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 12),
-                                              ),
-                                              Text(info['customer_name'],
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 12,
-                                                  )),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              Text(
-                                                "Gender: ",
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 12),
-                                              ),
-                                              Text(info['gender'],
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 12,
-                                                  )),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              Text(
-                                                "Specified No. of Passengers: ",
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 12),
-                                              ),
-                                              Text(info['number_of_passengers'],
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 12,
-                                                  )),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              Text(
-                                                "Contact No: ",
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 12),
-                                              ),
-                                              Text(info['contact_number'],
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 12,
-                                                  )),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              Text(
-                                                "Customer Address: ",
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 12),
-                                              ),
-                                              Text(info['address'],
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 12,
-                                                  )),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              Text(
-                                                "Date of Reservation: ",
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 12),
-                                              ),
-                                              Text(info['date_to_reserve'],
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 12,
-                                                  )),
-                                            ],
-                                          ),
-                                          (info['status'] != "Cancelled")
-                                              ? Container(
-                                                  alignment:
-                                                      Alignment.bottomCenter,
-                                                  child: ElevatedButton(
-                                                      style: ElevatedButton
-                                                          .styleFrom(
-                                                              primary: Colors
-                                                                  .yellow[700],
-                                                              minimumSize:
-                                                                  Size(80, 35)),
-                                                      onPressed: () {
-                                                        var response;
-                                                        response = "Cancelled";
-                                                        if (info['status'] !=
-                                                            "Cancelled") {
-                                                          setState(() {
-                                                            //isButtonDisabled = true;
-                                                            context
-                                                                .read<
-                                                                    Authenticate>()
-                                                                .respondBooking(
-                                                                    fnamePlate =
-                                                                        info['customer_name'] +
-                                                                            info['plate_reference'],
-                                                                    response);
-                                                          });
-                                                        }
-                                                      },
-                                                      child: Text(
-                                                          'Cancel Request')),
-                                                )
-                                              : Container(
-                                                  alignment:
-                                                      Alignment.bottomCenter,
-                                                  child: Text('CANCELLED',
-                                                      style: TextStyle(
-                                                          color: Colors.red)))
+              child: StreamBuilder(
+                  stream: bookings = FirebaseFirestore.instance
+                      .collection('bookings')
+                      .where('customer_name', isEqualTo: name)
+                      .snapshots(),
+                  builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (snapshot.hasError) {
+                      return Container(
+                          child:
+                              Center(child: Text('Failed to Retreive Info')));
+                    }
+                    if (snapshot.hasData == false) {
+                      return Container(
+                          decoration: BoxDecoration(color: Colors.white),
+                          child: Center(child: CircularProgressIndicator()));
+                    }
+                    return Column(
+                        children: snapshot.data.docs //bookingDetails
+                            .map((info) => InkWell(
+                                child: Container(
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(15)),
+                                        border: Border.all(
+                                            width: 2,
+                                            color: Colors.yellow[700]),
+                                        boxShadow: [
+                                          BoxShadow(
+                                              blurRadius: 10,
+                                              color: Colors.grey,
+                                              offset: Offset(3, 3)),
                                         ]),
-                                  ]))
-                              : Container(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 10, horizontal: 10),
-                                  child: Center(
-                                      /*child: Text('No Bookings Received',
-                                        style: TextStyle(color: Colors.grey)),*/
-                                      ))))
-                      .toList()))
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 10, horizontal: 10),
+                                    margin: EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 5),
+                                    child: Column(children: <Widget>[
+                                      Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: <Widget>[
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  "Status: ",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12),
+                                                ),
+                                                (info['status'] != "Cancelled")
+                                                    ? Text(info['status'],
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontSize: 12,
+                                                            color:
+                                                                Colors.yellow))
+                                                    : Text(info['status'],
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontSize: 12,
+                                                            color: Colors.red)),
+                                              ],
+                                            ),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  "Driver Name: ",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12),
+                                                ),
+                                                Text(info['driver_name'],
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12,
+                                                    )),
+                                              ],
+                                            ),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  "Jeepney Plate No: ",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12),
+                                                ),
+                                                Text(info['plate_reference'],
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12,
+                                                    )),
+                                              ],
+                                            ),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  "Customer's Name: ",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12),
+                                                ),
+                                                Text(info['customer_name'],
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12,
+                                                    )),
+                                              ],
+                                            ),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  "Gender: ",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12),
+                                                ),
+                                                Text(info['gender'],
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12,
+                                                    )),
+                                              ],
+                                            ),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  "Specified No. of Passengers: ",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12),
+                                                ),
+                                                Text(
+                                                    info[
+                                                        'number_of_passengers'],
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12,
+                                                    )),
+                                              ],
+                                            ),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  "Contact No: ",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12),
+                                                ),
+                                                Text(info['contact_number'],
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12,
+                                                    )),
+                                              ],
+                                            ),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  "Customer Address: ",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12),
+                                                ),
+                                                Text(info['address'],
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12,
+                                                    )),
+                                              ],
+                                            ),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  "Date of Reservation: ",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12),
+                                                ),
+                                                Text(info['date_to_reserve'],
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12,
+                                                    )),
+                                              ],
+                                            ),
+                                            (info['status'] != "Cancelled")
+                                                ? Container(
+                                                    alignment:
+                                                        Alignment.bottomCenter,
+                                                    child: ElevatedButton(
+                                                        style: ElevatedButton
+                                                            .styleFrom(
+                                                                primary: Colors
+                                                                        .yellow[
+                                                                    700],
+                                                                minimumSize:
+                                                                    Size(80,
+                                                                        35)),
+                                                        onPressed: () {
+                                                          var response;
+                                                          response =
+                                                              "Cancelled";
+                                                          if (info['status'] !=
+                                                              "Cancelled") {
+                                                            setState(() {
+                                                              //isButtonDisabled = true;
+                                                              context
+                                                                  .read<
+                                                                      Authenticate>()
+                                                                  .respondBooking(
+                                                                      fnamePlate =
+                                                                          info['customer_name'] +
+                                                                              info['plate_reference'],
+                                                                      response);
+                                                            });
+                                                          }
+                                                        },
+                                                        child: Text(
+                                                            'Cancel Request')),
+                                                  )
+                                                : Container(
+                                                    alignment:
+                                                        Alignment.bottomCenter,
+                                                    child: Text('CANCELLED',
+                                                        style: TextStyle(
+                                                            color: Colors.red)))
+                                          ]),
+                                    ]))))
+                            .toList());
+                  }))
         ])))));
   }
 }

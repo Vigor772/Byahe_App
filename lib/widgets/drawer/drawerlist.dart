@@ -54,7 +54,7 @@ class _DrawerListState extends State<DrawerList> {
                     leading: Icon(Icons.book_online),
                     title: Text('Booking Requests'),
                     onTap: () {
-                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                      Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => ReserveDetails()));
                     },
                   ),
@@ -87,11 +87,11 @@ class _DrawerListState extends State<DrawerList> {
                     child: toOnboard(),
                     onTap: () {
                       if (MyApp.inboard == false) {
-                        Navigator.of(context).pushReplacement(
+                        Navigator.of(context).push(
                             MaterialPageRoute(builder: (context) => Onboard()));
                         MyApp.inboard = true;
                       } else {
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) => LocationSelection()));
                         MyApp.inboard = false;
                       }
@@ -103,6 +103,7 @@ class _DrawerListState extends State<DrawerList> {
                     onTap: () {
                       String status = "OFFLINE";
                       context.read<Authenticate>().updateUserStatus(status);
+                      Navigator.of(context).pushReplacementNamed('/');
                       FirebaseAuth.instance.signOut();
                     },
                   ),

@@ -2,6 +2,8 @@ import 'package:byahe_app/data/data.dart';
 import 'package:byahe_app/pages/login_auth.dart';
 import 'package:byahe_app/widgets/drawer/drawerheader.dart';
 import 'package:byahe_app/widgets/drawer/drawerlist.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 //import 'package:byahe_app/widgets/topbarmod.dart';
@@ -22,7 +24,9 @@ class _PendingState extends State<Pending> {
   List getPings = [];
   var driverPlate;
   var placeValue;
-  int current_occupied;
+  Stream<QuerySnapshot> pendingpings;
+  var current_occupied;
+  String useruid = FirebaseAuth.instance.currentUser.uid;
 
   @override
   initState() {
@@ -127,105 +131,133 @@ class _PendingState extends State<Pending> {
                     ]),
               )),*/
           Container(
-              child: Column(
-            children: getPings
-                .map((commuter) => (commuter['pinged_driver'] == driverPlate)
-                    ? Container(
-                        decoration: BoxDecoration(
-                            color: Colors.yellow[700],
-                            borderRadius: BorderRadius.all(Radius.circular(5)),
-                            boxShadow: [
-                              BoxShadow(
-                                  blurRadius: 10,
-                                  color: Colors.grey,
-                                  offset: Offset(3, 3)),
-                            ]),
-                        padding: EdgeInsets.symmetric(vertical: 10),
-                        margin:
-                            EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Row(children: <Widget>[
-                                Container(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 10),
-                                    child: Icon(Icons.account_circle_rounded)),
-                                Column(
-                                  children: [
-                                    Container(
-                                      child: (commuter['place_in_words'] !=
-                                              null)
-                                          ? Text(
-                                              commuter['place_in_words'],
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 12),
-                                            )
-                                          : Text('Fetching Location...',
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 12)),
-                                    ),
-                                    Container(
-                                      child: (commuter['full_name'] != null)
-                                          ? Text(commuter['full_name'],
-                                              style: TextStyle(fontSize: 10))
-                                          : Text("Fetching Name...",
-                                              style: TextStyle(fontSize: 10)),
-                                    ),
-                                  ],
-                                )
-                              ]),
-                              Row(children: <Widget>[
-                                InkWell(
-                                  onTap: () {
-                                    var ping_status;
-                                    ping_status = 'Onboard';
-                                    context.read<Authenticate>().pingResponse(
-                                        commuter['uid'], ping_status);
-                                    setState(() {
-                                      current_occupied++;
-                                    });
-                                    context
-                                        .read<Authenticate>()
-                                        .updateOccupied(current_occupied);
-                                  },
-                                  child: Container(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 5),
-                                    child: Image.asset(
-                                      'assets/check.png',
-                                      width: 50,
-                                    ),
-                                  ),
-                                ),
-                                InkWell(
-                                  onTap: () {
-                                    var ping_status;
-                                    ping_status = "Rejected";
-                                    context.read<Authenticate>().pingResponse(
-                                        commuter['uid'], ping_status);
-                                  },
-                                  child: Container(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 5),
-                                    child: Image.asset(
-                                      'assets/reject.png',
-                                      width: 50,
-                                    ),
-                                  ),
-                                )
-                              ])
-                            ]))
-                    : Container(
-                        padding:
-                            EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                        child: Center(
-                            child: Text('No Pending Pings',
-                                style: TextStyle(color: Colors.grey)))))
-                .toList(),
-          ))
+              child: StreamBuilder(
+                  stream: pendingpings = FirebaseFirestore.instance
+                      .collection('users')
+                      .where('pinged_driver', isEqualTo: useruid)
+                      .where('user_type', isEqualTo: "Commuter")
+                      .where('ping_status', isEqualTo: "Pending")
+                      .snapshots(),
+                  builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (snapshot.hasError) {
+                      return Container(
+                          child:
+                              Center(child: Text('Failed to Retreive Info')));
+                    }
+                    if (snapshot.hasData == false) {
+                      return Container(
+                          decoration: BoxDecoration(color: Colors.transparent),
+                          child: Center(child: CircularProgressIndicator()));
+                    }
+                    return Column(
+                      children: snapshot.data.docs
+                          .map((commuter) => Container(
+                              decoration: BoxDecoration(
+                                  color: Colors.yellow[700],
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(5)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                        blurRadius: 10,
+                                        color: Colors.grey,
+                                        offset: Offset(3, 3)),
+                                  ]),
+                              padding: EdgeInsets.symmetric(vertical: 10),
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    Row(children: <Widget>[
+                                      Container(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 10),
+                                          child: Icon(
+                                              Icons.account_circle_rounded)),
+                                      Column(
+                                        children: [
+                                          Container(
+                                            child: (commuter[
+                                                        'place_in_words'] !=
+                                                    null)
+                                                ? Text(
+                                                    commuter['place_in_words'],
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 12),
+                                                  )
+                                                : Text('Fetching Location...',
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 12)),
+                                          ),
+                                          Container(
+                                            child: (commuter['full_name'] !=
+                                                    null)
+                                                ? Text(commuter['full_name'],
+                                                    style:
+                                                        TextStyle(fontSize: 10))
+                                                : Text("Fetching Name...",
+                                                    style: TextStyle(
+                                                        fontSize: 10)),
+                                          ),
+                                        ],
+                                      )
+                                    ]),
+                                    Row(children: <Widget>[
+                                      InkWell(
+                                        onTap: () {
+                                          var ping_status;
+                                          ping_status = 'Onboard';
+                                          context
+                                              .read<Authenticate>()
+                                              .pingResponse(
+                                                  commuter['uid'], ping_status);
+                                          /*setState(() {
+                                            current_occupied++;
+                                          });*/
+                                          setState(() {
+                                            context
+                                                .read<Authenticate>()
+                                                .updateOccupied(
+                                                    current_occupied++);
+                                          });
+                                        },
+                                        child: Container(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 5),
+                                          child: Image.asset(
+                                            'assets/check.png',
+                                            width: 50,
+                                          ),
+                                        ),
+                                      ),
+                                      InkWell(
+                                        onTap: () {
+                                          var ping_status;
+                                          ping_status = "Rejected";
+                                          context
+                                              .read<Authenticate>()
+                                              .pingResponse(
+                                                  commuter['uid'], ping_status);
+                                        },
+                                        child: Container(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 5),
+                                          child: Image.asset(
+                                            'assets/reject.png',
+                                            width: 50,
+                                          ),
+                                        ),
+                                      )
+                                    ])
+                                  ])))
+                          .toList(),
+                    );
+                  }))
         ])))));
   }
 }

@@ -275,6 +275,25 @@ class Authenticate {
     }
   }
 
+  Future getDriverInfoDetails(String email) async {
+    List driverDetails = [];
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .get()
+          .then((query) {
+        query.docs.forEach((doc) {
+          driverDetails.add(doc.data());
+        });
+      });
+      return driverDetails;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
   Future getRouteListDetails(String location) async {
     List routeList = [];
 
@@ -447,7 +466,7 @@ class Authenticate {
             print('Failed to clear Commuter Current LandMark: $onError'));
   }
 
-  Future<void> updatePing(var driverplate) {
+  Future<void> updatePing(var driveruid) {
     var ping_status = "Pending";
     String useruid = FirebaseAuth.instance.currentUser.uid;
     return FirebaseFirestore.instance
@@ -455,7 +474,7 @@ class Authenticate {
         .doc(useruid)
         .update({
           'ping_status': ping_status,
-          'pinged_driver': driverplate,
+          'pinged_driver': driveruid,
         })
         .then((value) => print('Update Ping Status: Pending'))
         .catchError(
@@ -536,7 +555,7 @@ class Authenticate {
   }
 
   Future getOccupied() async {
-    var current_occupied;
+    bool current_occupied;
     String useruid = FirebaseAuth.instance.currentUser.uid;
     DocumentSnapshot usercat =
         await FirebaseFirestore.instance.collection('users').doc(useruid).get();

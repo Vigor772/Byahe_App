@@ -1,4 +1,3 @@
-// ignore_for_file: missing_return
 import 'dart:async';
 import 'dart:typed_data';
 import 'package:byahe_app/main.dart';
@@ -25,6 +24,7 @@ class Map extends StatefulWidget {
 
 class _MapState extends State<Map> {
   String useruid = FirebaseAuth.instance.currentUser.uid;
+  Stream<DocumentSnapshot> driverInfo;
   var routeData;
   var latitude;
   var longitude;
@@ -54,11 +54,10 @@ class _MapState extends State<Map> {
     return byteData.buffer.asUint8List();
   }
 
-  void updateMarkerAndCircle(
-      locate.LocationData newLocalData, Uint8List imageData) {
+  updateMarkerAndCircle(locate.LocationData newLocalData, Uint8List imageData) {
     LatLng driverLocation =
         LatLng(routeData['latitude'], routeData['longitude']);
-    this.setState(() {
+    setState(() {
       marker = Marker(
           markerId: MarkerId("home"),
           position: driverLocation,
@@ -158,6 +157,15 @@ class _MapState extends State<Map> {
     }
   }
 
+  /*driverDetails(driveruid) {
+    setState(() {
+      driverInfo = FirebaseFirestore.instance
+          .collection('users')
+          .doc(driveruid)
+          .snapshots();
+    });
+  }*/
+
   @override
   void initState() {
     super.initState();
@@ -234,313 +242,356 @@ class _MapState extends State<Map> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-        onWillPop: () async => state
-            ? showDialog<bool>(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    title: Text('WARNING'),
-                    content: Text(
-                        'You are not able to exit on this page while pinging!'),
-                    actions: <Widget>[
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: Text('CLOSE'),
-                      )
-                    ],
-                  );
-                })
-            : true,
-        child: Scaffold(
-            appBar: AppBar(
-              backgroundColor: Colors.transparent,
-              bottomOpacity: 0.0,
-              elevation: 0.0,
-              iconTheme: IconThemeData(color: Colors.yellow[700]),
-              title: Text('Byahe App',
-                  style: TextStyle(
-                      color: Colors.yellow[700], fontWeight: FontWeight.bold)),
-            ),
-            backgroundColor: state ? Colors.grey[200] : null,
-            body: SingleChildScrollView(
-                child: SafeArea(
-                    child: Container(
-              child: Column(
-                children: <Widget>[
-                  // Container(height: 50, child: TopBarMod()), //MAIN TOP BAR
-                  Container(
-                      decoration: BoxDecoration(
-                          border: Border.all(
-                              color:
-                                  state ? Colors.redAccent : Colors.yellow[700],
-                              width: 2)),
-                      height: 400.0,
-                      child: GoogleMap(
-                        mapType: MapType.normal,
-                        initialCameraPosition: CameraPosition(
-                            target: LatLng(
-                                routeData['latitude'], routeData['longitude'])),
-                        markers: Set.of(usersMarkers),
-                        circles: Set.of((circle != null) ? [circle] : []),
-                        onMapCreated: (GoogleMapController controller) async {
-                          _controller = controller;
-                          getCurrentLocation();
-                          if (MyApp.ping == true) {
-                            getCommuterLocation();
-                          }
-                        },
-                      )),
-                  Container(
-                      child: Column(
-                    children: <Widget>[
-                      Container(
-                          margin: EdgeInsets.all(10),
-                          alignment: Alignment.centerRight,
-                          child: InkWell(
-                              onTap: () {
-                                Navigator.of(context).pushReplacement(
-                                    MaterialPageRoute(
-                                        builder: (context) => Map(routeData)));
-                              },
-                              child: Image.asset(
-                                'assets/reload.png',
-                                width: 20,
-                                height: 20,
-                              ))),
-                      Column(children: [
-                        if (commuter_ping != "Onboard" &&
-                            commuter_ping != "Rejected")
-                          if (state)
-                            Text('PINGING ...',
-                                style: TextStyle(
-                                    color: Colors.red,
-                                    fontSize: 25,
-                                    fontWeight: FontWeight.bold)),
-                        if (commuter_ping == "Rejected")
-                          Text('Rejected',
-                              style: TextStyle(
-                                  color: Colors.redAccent,
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.bold)),
-                        if (commuter_ping == "Onboard")
-                          Text('Onboard',
-                              style: TextStyle(
-                                  color: Colors.green,
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.bold))
-                      ]),
-                      Container(
-                          child: (commuter_ping != "Onboard")
-                              ? state
-                                  ? Image.asset('assets/car_ride_tester.gif',
-                                      height: 100)
-                                  : Image.asset(
-                                      'assets/undraw_fast_car_p4cu-removebg-preview.png',
-                                      height: 100)
-                              : Image.asset(
-                                  'assets/undraw_fast_car_p4cu-removebg-preview.png',
-                                  height: 100)),
-                      Container(
-                          padding: EdgeInsets.all(10),
-                          child: Column(children: <Widget>[
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: <Widget>[
-                                Container(
-                                    child: Row(
-                                  children: <Widget>[
-                                    Text("Status : ",
-                                        style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold)),
-                                    Text(
-                                      "${routeData['vehicle_status']}",
-                                      style: TextStyle(
-                                          fontSize: 10,
-                                          color: Colors.green,
-                                          decoration: TextDecoration.underline,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                )),
-                                Container(
-                                    child: Row(children: <Widget>[
-                                  Text(
-                                    "Vehicle Plate Number: ",
-                                    style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(
-                                    "${routeData['vehicle_plate_number']}",
-                                    style: TextStyle(
-                                        fontSize: 10,
-                                        decoration: TextDecoration.underline,
-                                        color: Colors.green,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ]))
-                              ],
-                            ),
-                            Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: <Widget>[
-                                  Container(
-                                      child: Row(
-                                    children: <Widget>[
-                                      Text(
-                                        "Seats availability : ",
-                                        style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      Text(
-                                        "${routeData['current_occupied'].toString()}/${routeData['seats_avail'].toString()}",
-                                        style: TextStyle(
-                                            fontSize: 10,
-                                            color: Colors.green,
-                                            decoration:
-                                                TextDecoration.underline,
-                                            fontWeight: FontWeight.bold),
-                                      )
-                                    ],
-                                  ))
-                                ]),
-                            Row(children: <Widget>[
-                              Container(
-                                  child: Wrap(
-                                      direction: Axis.vertical,
-                                      children: <Widget>[
-                                    Text(
-                                      "ROUTE : ",
-                                      style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    Text(
-                                      "${routeData['route_path']}",
-                                      style: TextStyle(
-                                          color: Colors.green,
-                                          decoration: TextDecoration.underline,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ]))
-                            ])
-                          ])),
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 25),
-                        child: (commuter_ping != "Onboard")
-                            ? state
-                                ? Container(
-                                    height: 50,
-                                    width: 200,
-                                    margin: EdgeInsets.all(10),
-                                    child: ElevatedButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            cancelPing();
-                                            context
-                                                .read<Authenticate>()
-                                                .clearPing();
-                                            MyApp.ping = false;
-                                            state = false;
-                                          });
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                            primary: Colors.redAccent,
-                                            onPrimary: Colors.white,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                      12), // <-- Radius
-                                            ),
-                                            side: BorderSide(
-                                                color: Colors.redAccent)),
-                                        child: Text('CANCEL NOW!')))
-                                : Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    children: <Widget>[
-                                      ElevatedButton(
-                                          onPressed: () {
-                                            if (currentUserType == "Driver") {
-                                              showDialog(
-                                                  context: context,
-                                                  builder: (context) {
-                                                    return AlertDialog(
-                                                      title: Text(
-                                                          "Driver can't ping"),
-                                                      content: Text(
-                                                          'This function is for commuters only'),
-                                                      actions: <Widget>[
-                                                        TextButton(
-                                                          onPressed: () {
-                                                            Navigator.pop(
-                                                                context);
-                                                          },
-                                                          child: Text('CLOSE'),
-                                                        )
-                                                      ],
-                                                    );
-                                                  });
-                                            } else if (currentUserType ==
-                                                "Commuter") {
-                                              setState(() {
-                                                savePing();
-                                                convertLatLng();
-                                                getCoordinates();
-                                                //getCommuterLocation();
-                                                state = true;
-                                                context
-                                                    .read<Authenticate>()
-                                                    .updatePing(routeData[
-                                                        'vehicle_plate_number']);
-                                                MyApp.ping = true;
-                                              });
-                                            }
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                              primary: Colors.white,
-                                              onPrimary: Colors.yellow[700],
-                                              side: BorderSide(
-                                                  color: Colors.yellow[700])),
-                                          child: Text(
-                                            "QUEUE NOW!",
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold),
-                                          )),
-                                      ElevatedButton(
-                                          onPressed: () {
-                                            Navigator.of(context).push(
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        ReserveVehicle(
-                                                            routeData)));
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                              onPrimary: Colors.yellow[700],
-                                              primary: Colors.white,
-                                              side: BorderSide(
-                                                  color: Colors.yellow[700])),
-                                          child: Text("RESERVE NOW!",
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold)))
-                                    ],
-                                  )
-                            : Container(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 1, horizontal: 1),
-                              ),
-                      )
-                    ],
-                  ))
-                ],
+    return FutureBuilder<DocumentSnapshot>(
+        future: FirebaseFirestore.instance
+            .collection('users')
+            .doc(routeData['uid'])
+            .get(),
+        builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+          if (snapshot.hasError) {
+            return Container(
+                child: Center(child: Text('Failed to Retreive Info')));
+          }
+          if (snapshot.hasData == false) {
+            return Container(
+                decoration: BoxDecoration(color: Colors.white),
+                child: Center(child: CircularProgressIndicator()));
+          }
+          /*if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: SizedBox(
+                width: 60,
+                height: 60,
+                child: CircularProgressIndicator(),
               ),
-            )))));
+            );
+          }*/
+          return WillPopScope(
+              onWillPop: () async => state
+                  ? showDialog<bool>(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: Text('WARNING'),
+                          content: Text(
+                              'You are not able to exit on this page while pinging!'),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: Text('CLOSE'),
+                            )
+                          ],
+                        );
+                      })
+                  : true,
+              child: Scaffold(
+                  appBar: AppBar(
+                    backgroundColor: Colors.transparent,
+                    bottomOpacity: 0.0,
+                    elevation: 0.0,
+                    iconTheme: IconThemeData(color: Colors.yellow[700]),
+                    title: Text('Byahe App',
+                        style: TextStyle(
+                            color: Colors.yellow[700],
+                            fontWeight: FontWeight.bold)),
+                  ),
+                  backgroundColor: state ? Colors.grey[200] : null,
+                  body: SingleChildScrollView(
+                      child: SafeArea(
+                          child: Container(
+                    child: Column(
+                      children: <Widget>[
+                        // Container(height: 50, child: TopBarMod()), //MAIN TOP BAR
+                        Container(
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: state
+                                        ? Colors.redAccent
+                                        : Colors.yellow[700],
+                                    width: 2)),
+                            height: 400.0,
+                            child: GoogleMap(
+                              mapType: MapType.normal,
+                              initialCameraPosition: CameraPosition(
+                                  target: LatLng(snapshot.data['latitude'],
+                                      snapshot.data['longitude'])),
+                              markers: Set.of(usersMarkers),
+                              circles: Set.of((circle != null) ? [circle] : []),
+                              onMapCreated:
+                                  (GoogleMapController controller) async {
+                                _controller = controller;
+                                getCurrentLocation();
+                                if (MyApp.ping == true) {
+                                  getCommuterLocation();
+                                }
+                              },
+                            )),
+                        Container(
+                            child: Column(
+                          children: <Widget>[
+                            Container(
+                                margin: EdgeInsets.all(10),
+                                alignment: Alignment.centerRight,
+                                child: InkWell(
+                                    onTap: () {
+                                      Navigator.of(context).pushReplacement(
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  Map(routeData)));
+                                    },
+                                    child: Image.asset(
+                                      'assets/reload.png',
+                                      width: 20,
+                                      height: 20,
+                                    ))),
+                            Column(children: [
+                              if (commuter_ping != "Onboard" &&
+                                  commuter_ping != "Rejected")
+                                if (state)
+                                  Text('PINGING ...',
+                                      style: TextStyle(
+                                          color: Colors.red,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                              if (commuter_ping == "Rejected")
+                                Text('Rejected',
+                                    style: TextStyle(
+                                        color: Colors.redAccent,
+                                        fontSize: 25,
+                                        fontWeight: FontWeight.bold)),
+                              if (commuter_ping == "Onboard")
+                                Text('Onboard',
+                                    style: TextStyle(
+                                        color: Colors.green,
+                                        fontSize: 25,
+                                        fontWeight: FontWeight.bold))
+                            ]),
+                            Container(
+                                child: (commuter_ping != "Onboard")
+                                    ? state
+                                        ? Image.asset(
+                                            'assets/car_ride_tester.gif',
+                                            height: 100)
+                                        : Image.asset(
+                                            'assets/undraw_fast_car_p4cu-removebg-preview.png',
+                                            height: 100)
+                                    : Image.asset(
+                                        'assets/undraw_fast_car_p4cu-removebg-preview.png',
+                                        height: 100)),
+                            Container(
+                                padding: EdgeInsets.all(10),
+                                child: Column(children: <Widget>[
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: <Widget>[
+                                      Container(
+                                          child: Row(
+                                        children: <Widget>[
+                                          Text("Status : ",
+                                              style: TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold)),
+                                          Text(
+                                            "${snapshot.data['vehicle_status']}",
+                                            style: TextStyle(
+                                                fontSize: 10,
+                                                color: Colors.green,
+                                                decoration:
+                                                    TextDecoration.underline,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      )),
+                                      Container(
+                                          child: Row(children: <Widget>[
+                                        Text(
+                                          "Vehicle Plate Number: ",
+                                          style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Text(
+                                          "${snapshot.data['vehicle_plate_number']}",
+                                          style: TextStyle(
+                                              fontSize: 10,
+                                              decoration:
+                                                  TextDecoration.underline,
+                                              color: Colors.green,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ]))
+                                    ],
+                                  ),
+                                  Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: <Widget>[
+                                        Container(
+                                            child: Row(
+                                          children: <Widget>[
+                                            Text(
+                                              "Seats availability : ",
+                                              style: TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Text(
+                                              "${snapshot.data['current_occupied'].toString()}/${snapshot.data['seats_avail'].toString()}",
+                                              style: TextStyle(
+                                                  fontSize: 10,
+                                                  color: Colors.green,
+                                                  decoration:
+                                                      TextDecoration.underline,
+                                                  fontWeight: FontWeight.bold),
+                                            )
+                                          ],
+                                        ))
+                                      ]),
+                                  Row(children: <Widget>[
+                                    Container(
+                                        child: Wrap(
+                                            direction: Axis.vertical,
+                                            children: <Widget>[
+                                          Text(
+                                            "ROUTE : ",
+                                            style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          Text(
+                                            "${snapshot.data['route_path']}",
+                                            style: TextStyle(
+                                                color: Colors.green,
+                                                decoration:
+                                                    TextDecoration.underline,
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ]))
+                                  ])
+                                ])),
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 25),
+                              child: (commuter_ping != "Onboard")
+                                  ? state
+                                      ? Container(
+                                          height: 50,
+                                          width: 200,
+                                          margin: EdgeInsets.all(10),
+                                          child: ElevatedButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  cancelPing();
+                                                  context
+                                                      .read<Authenticate>()
+                                                      .clearPing();
+                                                  MyApp.ping = false;
+                                                  state = false;
+                                                });
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                  primary: Colors.redAccent,
+                                                  onPrimary: Colors.white,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12), // <-- Radius
+                                                  ),
+                                                  side: BorderSide(
+                                                      color: Colors.redAccent)),
+                                              child: Text('CANCEL NOW!')))
+                                      : Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceAround,
+                                          children: <Widget>[
+                                            ElevatedButton(
+                                                onPressed: () {
+                                                  if (currentUserType ==
+                                                      "Driver") {
+                                                    showDialog(
+                                                        context: context,
+                                                        builder: (context) {
+                                                          return AlertDialog(
+                                                            title: Text(
+                                                                "Driver can't ping"),
+                                                            content: Text(
+                                                                'This function is for commuters only'),
+                                                            actions: <Widget>[
+                                                              TextButton(
+                                                                onPressed: () {
+                                                                  Navigator.pop(
+                                                                      context);
+                                                                },
+                                                                child: Text(
+                                                                    'CLOSE'),
+                                                              )
+                                                            ],
+                                                          );
+                                                        });
+                                                  } else if (currentUserType ==
+                                                      "Commuter") {
+                                                    setState(() {
+                                                      savePing();
+                                                      convertLatLng();
+                                                      getCoordinates();
+                                                      //getCommuterLocation();
+                                                      state = true;
+                                                      context
+                                                          .read<Authenticate>()
+                                                          .updatePing(
+                                                              routeData['uid']);
+                                                      MyApp.ping = true;
+                                                    });
+                                                  }
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                    primary: Colors.white,
+                                                    onPrimary:
+                                                        Colors.yellow[700],
+                                                    side: BorderSide(
+                                                        color: Colors
+                                                            .yellow[700])),
+                                                child: Text(
+                                                  "QUEUE NOW!",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                )),
+                                            ElevatedButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).push(
+                                                      MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              ReserveVehicle(
+                                                                  routeData)));
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                    onPrimary:
+                                                        Colors.yellow[700],
+                                                    primary: Colors.white,
+                                                    side: BorderSide(
+                                                        color: Colors
+                                                            .yellow[700])),
+                                                child: Text("RESERVE NOW!",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold)))
+                                          ],
+                                        )
+                                  : Container(
+                                      padding: EdgeInsets.symmetric(
+                                          vertical: 1, horizontal: 1),
+                                    ),
+                            )
+                          ],
+                        ))
+                      ],
+                    ),
+                  )))));
+        });
   }
 
   Future<void> savePing() async {

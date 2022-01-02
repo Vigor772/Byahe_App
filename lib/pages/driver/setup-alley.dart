@@ -26,9 +26,11 @@ class _SetupAlleyState extends State<SetupAlley> {
   String pageName = 'Set-up';
   //String groupname = 'MODA JEEP ORG';
   //String myPlatenumber = 'KMJS 000';
+  Stream<QuerySnapshot> alley;
   String status;
   String driverPath;
   String driverPlate;
+  bool broadcast;
   var vehicleStatus;
   var alleyList = [];
   final locate.Location location = locate.Location();
@@ -42,9 +44,10 @@ class _SetupAlleyState extends State<SetupAlley> {
     fetchAlleyList();
     fetchPlateNum();
     fetchVehicleStatus();
+    fetchBroadcast();
     location.changeSettings(
         interval: 300, accuracy: locate.LocationAccuracy.high);
-    location.enableBackgroundMode(enable: true);
+    //location.enableBackgroundMode(enable: true);
   }
 
   fetchPath() async {
@@ -55,6 +58,19 @@ class _SetupAlleyState extends State<SetupAlley> {
       if (mounted) {
         setState(() {
           driverPath = result;
+        });
+      }
+    }
+  }
+
+  fetchBroadcast() async {
+    dynamic result = await context.read<Authenticate>().getBroadcastStatus();
+    if (result == null) {
+      print('Unable to retreive broadcast status (setup-alley.dart)');
+    } else {
+      if (mounted) {
+        setState(() {
+          broadcast = result;
         });
       }
     }
@@ -155,8 +171,8 @@ class _SetupAlleyState extends State<SetupAlley> {
     }
   }
 
-  broadcastLocation() {
-    if (MyApp.broadcast == false) {
+  broadcastLocation(bool broadcast) {
+    if (/*MyApp.broadcast*/ broadcast == false) {
       return Container(
         padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
         decoration: BoxDecoration(
@@ -176,7 +192,7 @@ class _SetupAlleyState extends State<SetupAlley> {
           ],
         ),
       );
-    } else if (MyApp.broadcast == true) {
+    } else if (/*MyApp.broadcast*/ broadcast == true) {
       return Container(
         padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
         decoration: BoxDecoration(
@@ -274,11 +290,11 @@ class _SetupAlleyState extends State<SetupAlley> {
                   children: <Widget>[
                     InkWell(
                         onTap: () {
-                          if (MyApp.broadcast == true) {
+                          if /*(MyApp.broadcast == true)*/ (broadcast == true) {
                             context.read<Authenticate>().updateBroadCast(false);
                             stopLiveLocation();
                             MyApp.broadcast = false;
-                          } else if (MyApp.broadcast == false) {
+                          } else if (/*MyApp.broadcast*/ broadcast == false) {
                             MyApp.broadcast = true;
                             context.read<Authenticate>().updateBroadCast(true);
                             getLiveLocation();
@@ -287,7 +303,7 @@ class _SetupAlleyState extends State<SetupAlley> {
                         MyApp.broadcast = !MyApp.broadcast;
                       });*/
                         },
-                        child: broadcastLocation()),
+                        child: broadcastLocation(broadcast)),
                     InkWell(
                         onTap: () {
                           if (MyApp.alley == true) {
@@ -320,12 +336,27 @@ class _SetupAlleyState extends State<SetupAlley> {
               child: Text("$driverPath Alley",
                   style: TextStyle(color: Colors.grey))),
           Container(
-              child: Column(
-                  children: alleyList
-                      .map(
-                        (jeep) => (jeep['route_path'] == driverPath &&
-                                jeep['vehicle_status'] == "ALLEY")
-                            ? Container(
+              child: StreamBuilder(
+                  stream: alley = FirebaseFirestore.instance
+                      .collection('users')
+                      .where('user_type', isEqualTo: "Driver")
+                      .where('route_path', isEqualTo: driverPath)
+                      .where('vehicle_status', isEqualTo: "ALLEY")
+                      .snapshots(),
+                  builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (snapshot.hasError) {
+                      return Container(
+                          child:
+                              Center(child: Text('Failed to Retreive Info')));
+                    }
+                    if (snapshot.hasData == false) {
+                      return Container(
+                          decoration: BoxDecoration(color: Colors.transparent),
+                          child: Center(child: CircularProgressIndicator()));
+                    }
+                    return Column(
+                        children: snapshot.data.docs
+                            .map((jeep) => Container(
                                 decoration: BoxDecoration(
                                     color: driverPlate ==
                                             jeep['vehicle_plate_number']
@@ -366,13 +397,9 @@ class _SetupAlleyState extends State<SetupAlley> {
                                       Container(
                                         child: Icon(Icons.more_horiz),
                                       )
-                                    ]))
-                            : Container(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 1, horizontal: 1),
-                              ),
-                      )
-                      .toList()))
+                                    ])))
+                            .toList());
+                  }))
         ])))));
   }
 }
