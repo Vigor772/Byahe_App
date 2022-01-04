@@ -6,7 +6,7 @@ import 'package:byahe_app/pages/login_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:byahe_app/widgets/topbarmod.dart';
+//import 'package:byahe_app/widgets/topbarmod.dart';
 import 'package:flutter/services.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -32,8 +32,12 @@ class _MapState extends State<Map> {
   var placeValue;
   var commuter_ping;
   var currentUserType;
+  List driver = [];
+  var driverLat;
+  var driverLong;
   bool state = false;
   _MapState(this.routeData);
+  StreamSubscription<QuerySnapshot> updateMarker;
   StreamSubscription _locationSubscription;
   locate.Location _locationTracker = locate.Location();
   GoogleMapController _controller;
@@ -54,12 +58,53 @@ class _MapState extends State<Map> {
     return byteData.buffer.asUint8List();
   }
 
-  updateMarkerAndCircle(locate.LocationData newLocalData, Uint8List imageData) {
+  /*updateMarkerAndCircle(locate.LocationData newLocalData, Uint8List imageData) {
     LatLng driverLocation =
         LatLng(routeData['latitude'], routeData['longitude']);
     setState(() {
       marker = Marker(
           markerId: MarkerId("home"),
+          position: driverLocation,
+          rotation: newLocalData.heading,
+          draggable: false,
+          zIndex: 2,
+          flat: true,
+          anchor: Offset(0.5, 0.5),
+          icon: BitmapDescriptor.fromBytes(imageData));
+      circle = Circle(
+          circleId: CircleId("arrow"),
+          radius: newLocalData.accuracy,
+          zIndex: 1,
+          strokeColor: Colors.blue,
+          center: driverLocation,
+          fillColor: Colors.blue.withAlpha(70));
+    });
+  }*/
+
+  //mao ni akong gichange mga part para live ang update niya sa map
+  //kaning naa sa ibabaw na gicomment mao ni tong original na structure niya
+  updateMarkerAndCircle(locate.LocationData newLocalData, Uint8List imageData) {
+    LatLng driverLocation;
+    updateMarker = FirebaseFirestore.instance
+        .collection('users')
+        .where('vehicle_plate_number',
+            isEqualTo: routeData['vehicle_plate_number'])
+        .snapshots()
+        .listen((querySnapshot) {
+      querySnapshot.docChanges.forEach((element) {
+        if (element.type == DocumentChangeType.added ||
+            element.type == DocumentChangeType.modified) {
+          //driver.add(element.doc.data());
+          driverLat = element.doc.data()['latitude'];
+          driverLong = element.doc.data()['longitude'];
+        }
+      });
+    });
+    print('Driver Coordinates: $driverLat, $driverLong');
+    return setState(() {
+      driverLocation = LatLng(driverLat, driverLong);
+      marker = Marker(
+          markerId: MarkerId(routeData['vehicle_plate_number']),
           position: driverLocation,
           rotation: newLocalData.heading,
           draggable: false,
@@ -115,6 +160,7 @@ class _MapState extends State<Map> {
 
       if (_locationSubscription != null) {
         _locationSubscription.cancel();
+        updateMarker.cancel();
       }
 
       _locationSubscription =
@@ -176,10 +222,12 @@ class _MapState extends State<Map> {
     fetchPingStatus();
   }
 
+  @override
   void dispose() {
     if (_locationSubscription != null) {
       _locationSubscription.cancel();
     }
+    updateMarker.cancel();
     //queueStatus.dispose();
     super.dispose();
   }
@@ -323,9 +371,9 @@ class _MapState extends State<Map> {
                                   (GoogleMapController controller) async {
                                 _controller = controller;
                                 getCurrentLocation();
-                                if (MyApp.ping == true) {
+                                /*if (MyApp.ping == true) {
                                   getCommuterLocation();
-                                }
+                                }*/
                               },
                             )),
                         Container(

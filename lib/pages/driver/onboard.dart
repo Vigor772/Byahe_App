@@ -217,15 +217,12 @@ class _OnboardState extends State<Onboard> {
                                         context
                                             .read<Authenticate>()
                                             .resetPing(commuter['uid']);
-                                        /*setState(() {
-                                          current_occupied--;
-                                        });*/
                                         setState(() {
-                                          context
-                                              .read<Authenticate>()
-                                              .updateOccupied(
-                                                  current_occupied--);
+                                          current_occupied--;
                                         });
+                                        context
+                                            .read<Authenticate>()
+                                            .updateOccupied(current_occupied--);
                                       },
                                       child: Container(
                                         padding: EdgeInsets.symmetric(

@@ -555,7 +555,7 @@ class Authenticate {
   }
 
   Future getOccupied() async {
-    bool current_occupied;
+    var current_occupied;
     String useruid = FirebaseAuth.instance.currentUser.uid;
     DocumentSnapshot usercat =
         await FirebaseFirestore.instance.collection('users').doc(useruid).get();

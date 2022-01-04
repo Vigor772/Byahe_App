@@ -154,7 +154,7 @@ class _SetupAlleyState extends State<SetupAlley> {
   }
 
   stopLiveLocation() async {
-    _locationSubscription?.cancel();
+    await _locationSubscription?.cancel();
     setState(() {
       _locationSubscription = null;
     });
@@ -212,6 +212,12 @@ class _SetupAlleyState extends State<SetupAlley> {
         ),
       );
     }
+  }
+
+  @override
+  void dispose() {
+    _locationSubscription.cancel();
+    super.dispose();
   }
 
   @override

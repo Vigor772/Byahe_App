@@ -2,6 +2,7 @@ import 'package:byahe_app/main.dart';
 import 'package:byahe_app/pages/commuter/locationselection.dart';
 import 'package:byahe_app/pages/commuter/reservedetails.dart';
 import 'package:byahe_app/pages/driver/onboard.dart';
+import 'package:byahe_app/pages/driver/setup-alley.dart';
 import 'package:byahe_app/pages/login/loginpage.dart';
 import 'package:byahe_app/pages/login_auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -72,7 +73,7 @@ class _DrawerListState extends State<DrawerList> {
                     onTap: () {
                       String status = "OFFLINE";
                       //Navigator.pop(context);
-                      context.read<Authenticate>().updateUserStatus(status);
+                      context.read<Authenticate>().updateUserStatus("OFFLINE");
                       Navigator.of(context).pushReplacementNamed('/');
                       FirebaseAuth.instance.signOut();
                       /*Navigator.of(context).push(
@@ -102,7 +103,7 @@ class _DrawerListState extends State<DrawerList> {
                         leading: Icon(Icons.logout), title: Text('Log Out')),
                     onTap: () {
                       String status = "OFFLINE";
-                      context.read<Authenticate>().updateUserStatus(status);
+                      context.read<Authenticate>().updateUserStatus("OFFLINE");
                       Navigator.of(context).pushReplacementNamed('/');
                       FirebaseAuth.instance.signOut();
                     },

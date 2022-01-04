@@ -216,15 +216,12 @@ class _PendingState extends State<Pending> {
                                               .read<Authenticate>()
                                               .pingResponse(
                                                   commuter['uid'], ping_status);
-                                          /*setState(() {
-                                            current_occupied++;
-                                          });*/
                                           setState(() {
-                                            context
-                                                .read<Authenticate>()
-                                                .updateOccupied(
-                                                    current_occupied++);
+                                            current_occupied++;
                                           });
+                                          context
+                                              .read<Authenticate>()
+                                              .updateOccupied(current_occupied);
                                         },
                                         child: Container(
                                           padding: EdgeInsets.symmetric(
