@@ -27,6 +27,7 @@ class _RouteSelectionState extends State<RouteSelection> {
   var userType;
   Location _locationTracker = Location();
   _RouteSelectionState(this.locationLists);
+  Stream<QuerySnapshot> seatsAllocated;
 
   @override
   void initState() {
@@ -168,16 +169,35 @@ class _RouteSelectionState extends State<RouteSelection> {
                                     style: TextStyle(color: Colors.white)),
                                 leading: Icon(Icons.place, color: Colors.white),
                                 trailing: (routeListDetails[index]['status'] ==
-                                        "ONLINE")
-                                    ? Text(
-                                        routeListDetails[index]
-                                                    ['current_occupied']
-                                                .toString() +
-                                            "/" +
-                                            routeListDetails[index]
-                                                    ['seats_avail']
-                                                .toString(),
-                                        style: TextStyle(color: Colors.white))
+                                            "ONLINE" &&
+                                        routeListDetails[index]['broadcast'] ==
+                                            true)
+                                    ? FutureBuilder(
+                                        future: FirebaseFirestore.instance
+                                            .collection('users')
+                                            .doc(routeListDetails[index]['uid'])
+                                            .get(),
+                                        builder: (context,
+                                            AsyncSnapshot<DocumentSnapshot>
+                                                snapshot) {
+                                          if (snapshot.hasError) {
+                                            return Text(
+                                                'Failed to Retreive Info',
+                                                style: TextStyle(
+                                                    color: Colors.white));
+                                          }
+                                          if (snapshot.hasData == false) {
+                                            return CircularProgressIndicator();
+                                          }
+                                          return Text(
+                                              snapshot.data['current_occupied']
+                                                      .toString() +
+                                                  "/" +
+                                                  snapshot.data['seats_avail']
+                                                      .toString(),
+                                              style: TextStyle(
+                                                  color: Colors.white));
+                                        })
                                     : Text(routeListDetails[index]['status'],
                                         style: TextStyle(color: Colors.white)),
                               ));
