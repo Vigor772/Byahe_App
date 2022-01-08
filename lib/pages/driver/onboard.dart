@@ -119,39 +119,88 @@ class _OnboardState extends State<Onboard> {
             ),
           ),
           NavigationalContainer(this.pageName),
-          StreamBuilder(
-              stream: totalonboard = FirebaseFirestore.instance
-                  .collection('users')
-                  .where('uid', isEqualTo: useruid)
-                  .snapshots(),
-              builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                if (snapshot.hasError) {
-                  return Container(
-                      child: Center(child: Text('Failed to Retreive Info')));
-                }
-                if (snapshot.hasData == false) {
-                  return Container(
-                      decoration: BoxDecoration(color: Colors.transparent),
-                      child: Center(child: CircularProgressIndicator()));
-                }
-                return Container(
-                  alignment: Alignment.topLeft,
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                  child: Row(
-                    children: snapshot.data.docs
-                        .map(
-                          (totalonboard) => Text(
-                              totalonboard['current_occupied'].toString() +
-                                  '/' +
-                                  totalonboard['seats_avail'].toString(),
-                              style: TextStyle(
-                                  color: checkVacant(commuterinfo.length),
-                                  fontWeight: FontWeight.bold)),
-                        )
-                        .toList(),
-                  ),
-                );
-              }),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 5, vertical: 10),
+                child: InkWell(
+                    onTap: () {
+                      if (current_occupied >= 0) {
+                        setState(() {
+                          current_occupied--;
+                        });
+                        context
+                            .read<Authenticate>()
+                            .updateOccupied(current_occupied);
+                      } else if (current_occupied < 0) {
+                        context.read<Authenticate>().updateOccupied(0);
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: Text("Onboard Already Empty"),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text('CLOSE'),
+                                  )
+                                ],
+                              );
+                            });
+                      }
+                    },
+                    child: Container(
+                        margin: EdgeInsets.symmetric(horizontal: 10),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                        decoration: BoxDecoration(
+                            color: Colors.yellow[700],
+                            borderRadius: BorderRadius.all(Radius.circular(5))),
+                        child: Text(
+                          'Unload Anonymous-',
+                          style: TextStyle(color: Colors.white),
+                        ))),
+              ),
+              StreamBuilder(
+                  stream: totalonboard = FirebaseFirestore.instance
+                      .collection('users')
+                      .where('uid', isEqualTo: useruid)
+                      .snapshots(),
+                  builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (snapshot.hasError) {
+                      return Container(
+                          child:
+                              Center(child: Text('Failed to Retreive Info')));
+                    }
+                    if (snapshot.hasData == false) {
+                      return Container(
+                          decoration: BoxDecoration(color: Colors.transparent),
+                          child: Center(child: CircularProgressIndicator()));
+                    }
+                    return Container(
+                      alignment: Alignment.topLeft,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                      child: Row(
+                        children: snapshot.data.docs
+                            .map(
+                              (totalonboard) => Text(
+                                  totalonboard['current_occupied'].toString() +
+                                      '/' +
+                                      totalonboard['seats_avail'].toString(),
+                                  style: TextStyle(
+                                      color: checkVacant(commuterinfo.length),
+                                      fontWeight: FontWeight.bold)),
+                            )
+                            .toList(),
+                      ),
+                    );
+                  }),
+            ],
+          ),
           Container(
               child: StreamBuilder(
                   stream: totalonboard = FirebaseFirestore.instance
@@ -222,7 +271,7 @@ class _OnboardState extends State<Onboard> {
                                         });
                                         context
                                             .read<Authenticate>()
-                                            .updateOccupied(current_occupied--);
+                                            .updateOccupied(current_occupied);
                                       },
                                       child: Container(
                                         padding: EdgeInsets.symmetric(

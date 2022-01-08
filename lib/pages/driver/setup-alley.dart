@@ -31,10 +31,14 @@ class _SetupAlleyState extends State<SetupAlley> {
   String driverPath;
   String driverPlate;
   bool broadcast;
+  var alley_state;
   var vehicleStatus;
   var alleyList = [];
   final locate.Location location = locate.Location();
   StreamSubscription<locate.LocationData> _locationSubscription;
+
+  bool clicked_back = false;
+  bool clicked_forward = false;
 
   @override
   void initState() {
@@ -118,21 +122,39 @@ class _SetupAlleyState extends State<SetupAlley> {
   Container alleyFunction() {
     if (MyApp.alley == false) {
       return Container(
-        padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+        margin: EdgeInsets.only(top: 10),
+        padding: EdgeInsets.symmetric(horizontal: 100, vertical: 17.5),
         decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 3,
+                blurRadius: 7,
+                offset: Offset(0, 3), // changes position of shadow
+              ),
+            ],
             border: Border.all(width: 2.0, color: Colors.yellow[700]),
             color: Colors.white,
             borderRadius: BorderRadius.all(Radius.circular(5))),
-        child: Text('ALLEY NOW !', style: TextStyle(color: Colors.yellow[700])),
+        child: Text('ALLEY NOW', style: TextStyle(color: Colors.yellow[700])),
       );
     } else {
       return Container(
-        padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+        margin: EdgeInsets.only(top: 10),
+        padding: EdgeInsets.symmetric(horizontal: 100, vertical: 17.5),
         decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 3,
+                blurRadius: 7,
+                offset: Offset(0, 3), // changes position of shadow
+              ),
+            ],
             border: Border.all(width: 2.0, color: Colors.redAccent),
             color: Colors.redAccent,
             borderRadius: BorderRadius.all(Radius.circular(5))),
-        child: Text('CANCEL NOW!', style: TextStyle(color: Colors.white)),
+        child: Text('STOP ALLEY', style: TextStyle(color: Colors.white)),
       );
     }
   }
@@ -171,18 +193,167 @@ class _SetupAlleyState extends State<SetupAlley> {
     }
   }
 
-  broadcastLocation(bool broadcast) {
-    if (/*MyApp.broadcast*/ broadcast == false) {
+  alleyType() {
+    if (MyApp.clicked_forward == true && MyApp.clicked_back == false) {
+      return StreamBuilder(
+          stream: alley = FirebaseFirestore.instance
+              .collection('users')
+              .where('user_type', isEqualTo: "Driver")
+              .where('route_path', isEqualTo: driverPath)
+              .where('vehicle_status', isEqualTo: "Alley-From-Origin")
+              .orderBy('alley_time', descending: false)
+              .snapshots(),
+          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+            if (snapshot.hasError) {
+              return Container(
+                  margin: EdgeInsets.only(top: 10),
+                  child: Center(child: Text('Failed to Retreive Info')));
+            }
+            if (snapshot.hasData == false) {
+              return Container(
+                  decoration: BoxDecoration(color: Colors.transparent),
+                  child: Center(child: CircularProgressIndicator()));
+            }
+            return Column(
+                children: snapshot.data.docs
+                    .map((jeep) => Container(
+                        decoration: BoxDecoration(
+                            color: driverPlate == jeep['vehicle_plate_number']
+                                ? Colors.yellowAccent[700]
+                                : Colors.yellow[700],
+                            borderRadius: BorderRadius.all(Radius.circular(5)),
+                            boxShadow: [
+                              BoxShadow(
+                                  blurRadius: 10,
+                                  color: Colors.grey,
+                                  offset: Offset(3, 3)),
+                            ]),
+                        padding:
+                            EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+                        margin:
+                            EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Row(children: <Widget>[
+                                Container(
+                                  child: Text(
+                                    jeep['vehicle_plate_number'],
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                Container(
+                                  child: Text(
+                                    ' Driver: ${jeep["last_name"]}',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                )
+                              ]),
+                              Container(
+                                child: Icon(Icons.more_horiz),
+                              )
+                            ])))
+                    .toList());
+          });
+    }
+    if (MyApp.clicked_back == true && MyApp.clicked_forward == false) {
+      return StreamBuilder(
+          stream: alley = FirebaseFirestore.instance
+              .collection('users')
+              .where('user_type', isEqualTo: "Driver")
+              .where('route_path', isEqualTo: driverPath)
+              .where('vehicle_status', isEqualTo: 'Alley-To-Origin')
+              .orderBy('alley_time', descending: false)
+              .snapshots(),
+          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+            if (snapshot.hasError) {
+              return Container(
+                  margin: EdgeInsets.only(top: 5),
+                  child: Center(child: Text('Failed to Retreive Info')));
+            }
+            if (snapshot.hasData == false) {
+              return Container(
+                  decoration: BoxDecoration(color: Colors.transparent),
+                  child: Center(child: CircularProgressIndicator()));
+            }
+            return Column(
+                children: snapshot.data.docs
+                    .map((jeep) => Container(
+                        decoration: BoxDecoration(
+                            color: driverPlate == jeep['vehicle_plate_number']
+                                ? Colors.yellowAccent[700]
+                                : Colors.yellow[700],
+                            borderRadius: BorderRadius.all(Radius.circular(5)),
+                            boxShadow: [
+                              BoxShadow(
+                                  blurRadius: 10,
+                                  color: Colors.grey,
+                                  offset: Offset(3, 3)),
+                            ]),
+                        padding:
+                            EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+                        margin:
+                            EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Row(children: <Widget>[
+                                Container(
+                                  child: Text(
+                                    jeep['vehicle_plate_number'],
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                Container(
+                                  child: Text(
+                                    ' Driver: ${jeep["last_name"]}',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                )
+                              ]),
+                              Container(
+                                child: Icon(Icons.more_horiz),
+                              )
+                            ])))
+                    .toList());
+          });
+    }
+    if (MyApp.clicked_forward == false && MyApp.clicked_back == false) {
       return Container(
-        padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+          margin: EdgeInsets.only(top: 10),
+          child:
+              Center(child: Text('Select Alley Category To View Alley List')));
+    }
+  }
+
+  broadcastLocation(/*bool broadcast*/) {
+    if (MyApp.broadcast /*broadcast*/ == false) {
+      return Container(
+        padding: EdgeInsets.symmetric(vertical: 15),
         decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 3,
+                blurRadius: 7,
+                offset: Offset(0, 3), // changes position of shadow
+              ),
+            ],
             border: Border.all(width: 2.0, color: Colors.yellow[700]),
             color: Colors.white,
             borderRadius: BorderRadius.all(Radius.circular(5))),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Container(
-              child: Icon(Icons.place),
+              child: Icon(
+                Icons.place,
+                color: Colors.yellow[700],
+              ),
             ),
             Container(
               padding: EdgeInsets.symmetric(horizontal: 10),
@@ -192,21 +363,35 @@ class _SetupAlleyState extends State<SetupAlley> {
           ],
         ),
       );
-    } else if (/*MyApp.broadcast*/ broadcast == true) {
+    } else if (MyApp.broadcast /*broadcast*/ == true) {
       return Container(
+        margin: EdgeInsets.only(top: 10),
         padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
         decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 3,
+                blurRadius: 7,
+                offset: Offset(0, 3), // changes position of shadow
+              ),
+            ],
             border: Border.all(width: 2.0, color: Colors.redAccent),
             color: Colors.redAccent,
             borderRadius: BorderRadius.all(Radius.circular(5))),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Container(
-              child: Icon(Icons.place),
+              child: Icon(
+                Icons.place,
+                color: Colors.white,
+              ),
             ),
             Container(
               padding: EdgeInsets.symmetric(horizontal: 10),
-              child: Text('STOP', style: TextStyle(color: Colors.yellow[700])),
+              child:
+                  Text('STOP BROADCAST', style: TextStyle(color: Colors.white)),
             )
           ],
         ),
@@ -217,6 +402,7 @@ class _SetupAlleyState extends State<SetupAlley> {
   @override
   void dispose() {
     _locationSubscription.cancel();
+    context.read<Authenticate>().updateBroadCast(false);
     super.dispose();
   }
 
@@ -290,30 +476,28 @@ class _SetupAlleyState extends State<SetupAlley> {
             ),
           ),
           Container(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    InkWell(
-                        onTap: () {
-                          if /*(MyApp.broadcast == true)*/ (broadcast == true) {
-                            context.read<Authenticate>().updateBroadCast(false);
-                            stopLiveLocation();
-                            MyApp.broadcast = false;
-                          } else if (/*MyApp.broadcast*/ broadcast == false) {
-                            MyApp.broadcast = true;
-                            context.read<Authenticate>().updateBroadCast(true);
-                            getLiveLocation();
-                          }
-                          /*setState(() {
+              padding: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+              child: Column(children: <Widget>[
+                InkWell(
+                    onTap: () {
+                      if (MyApp.broadcast == true) /*(broadcast == true)*/ {
+                        context.read<Authenticate>().updateBroadCast(false);
+                        stopLiveLocation();
+                        //MyApp.broadcast = false;
+                      } else if (MyApp.broadcast /*broadcast*/ == false) {
+                        //MyApp.broadcast = true;
+                        context.read<Authenticate>().updateBroadCast(true);
+                        getLiveLocation();
+                      }
+                      setState(() {
                         MyApp.broadcast = !MyApp.broadcast;
-                      });*/
-                        },
-                        child: broadcastLocation(broadcast)),
-                    InkWell(
-                        onTap: () {
-                          if (MyApp.alley == true) {
-                            /*for (var map in alleyList) {
+                      });
+                    },
+                    child: broadcastLocation()),
+                InkWell(
+                    onTap: () {
+                      if (MyApp.alley == true) {
+                        /*for (var map in alleyList) {
                               if (map['vehicle_plate_number'] == driverPlate) {
                                 alleyList.remove(map);
                                 context
@@ -322,90 +506,115 @@ class _SetupAlleyState extends State<SetupAlley> {
                                 break;
                               }
                             }*/
-                            context
-                                .read<Authenticate>()
-                                .updateVehicleStatus(status = 'DRIVING');
-                          } else {
-                            /*alleyList
+                        setState(() {
+                          alley_state = 'DRIVING';
+                        });
+                        var clear_alleydate;
+                        context
+                            .read<Authenticate>()
+                            .updateVehicleStatus(alley_state, clear_alleydate);
+                      }
+                      /*alleyList
                                 .add({'vehicle_plate_number': driverPlate});*/
-                            context
-                                .read<Authenticate>()
-                                .updateVehicleStatus(status = 'ALLEY');
-                          }
-                          setState(() {
-                            MyApp.alley = !MyApp.alley;
-                          });
-                        },
-                        child: alleyFunction())
-                  ])),
+
+                      if ((MyApp.clicked_forward == true ||
+                              MyApp.clicked_back == true) &&
+                          MyApp.alley == false) {
+                        context.read<Authenticate>().updateVehicleStatus(
+                            alley_state, Timestamp.now() /*DateTime.now()*/);
+                      }
+                      if (MyApp.clicked_forward == false &&
+                          MyApp.clicked_back == false) {
+                        MyApp.alley = false;
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: Text("Please Select Alley Category"),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text('CLOSE'),
+                                  )
+                                ],
+                              );
+                            });
+                      }
+
+                      setState(() {
+                        MyApp.alley = !MyApp.alley;
+                      });
+                    },
+                    child: alleyFunction())
+              ])),
+          Container(
+            margin: EdgeInsets.symmetric(vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: <Widget>[
+                InkWell(
+                    onTap: () {
+                      setState(() {
+                        alley_state = "Alley-From-Origin";
+                        MyApp.clicked_forward = !MyApp.clicked_forward;
+                        MyApp.clicked_back = false;
+                      });
+                    },
+                    child: Container(
+                        width: 160,
+                        height: 50,
+                        decoration: BoxDecoration(
+                            border: Border.all(
+                                width: 2.0,
+                                color: MyApp.clicked_forward
+                                    ? Colors.white
+                                    : Colors.yellow[700]),
+                            color: MyApp.clicked_forward
+                                ? Colors.redAccent
+                                : Colors.white,
+                            borderRadius: BorderRadius.all(Radius.circular(5))),
+                        child: Container(
+                          child: Icon(Icons.arrow_forward_sharp,
+                              color: MyApp.clicked_forward
+                                  ? Colors.white
+                                  : Colors.yellow[700]),
+                        ))),
+                InkWell(
+                    onTap: () {
+                      setState(() {
+                        alley_state = 'Alley-To-Origin';
+                        MyApp.clicked_back = !MyApp.clicked_back;
+                        MyApp.clicked_forward = false;
+                      });
+                    },
+                    child: Container(
+                        width: 160,
+                        height: 50,
+                        decoration: BoxDecoration(
+                            border: Border.all(
+                                width: 2.0,
+                                color: MyApp.clicked_back
+                                    ? Colors.white
+                                    : Colors.yellow[700]),
+                            color: MyApp.clicked_back
+                                ? Colors.redAccent
+                                : Colors.white,
+                            borderRadius: BorderRadius.all(Radius.circular(5))),
+                        child: Container(
+                          child: Icon(Icons.arrow_back_sharp,
+                              color: MyApp.clicked_back
+                                  ? Colors.white
+                                  : Colors.yellow[700]),
+                        ))),
+              ],
+            ),
+          ),
           Container(
               child: Text("$driverPath Alley",
                   style: TextStyle(color: Colors.grey))),
-          Container(
-              child: StreamBuilder(
-                  stream: alley = FirebaseFirestore.instance
-                      .collection('users')
-                      .where('user_type', isEqualTo: "Driver")
-                      .where('route_path', isEqualTo: driverPath)
-                      .where('vehicle_status', isEqualTo: "ALLEY")
-                      .snapshots(),
-                  builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                    if (snapshot.hasError) {
-                      return Container(
-                          child:
-                              Center(child: Text('Failed to Retreive Info')));
-                    }
-                    if (snapshot.hasData == false) {
-                      return Container(
-                          decoration: BoxDecoration(color: Colors.transparent),
-                          child: Center(child: CircularProgressIndicator()));
-                    }
-                    return Column(
-                        children: snapshot.data.docs
-                            .map((jeep) => Container(
-                                decoration: BoxDecoration(
-                                    color: driverPlate ==
-                                            jeep['vehicle_plate_number']
-                                        ? Colors.yellowAccent[700]
-                                        : Colors.yellow[700],
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(5)),
-                                    boxShadow: [
-                                      BoxShadow(
-                                          blurRadius: 10,
-                                          color: Colors.grey,
-                                          offset: Offset(3, 3)),
-                                    ]),
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 15, horizontal: 10),
-                                margin: EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 5),
-                                child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: <Widget>[
-                                      Row(children: <Widget>[
-                                        Container(
-                                          child: Text(
-                                            jeep['vehicle_plate_number'],
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
-                                        Container(
-                                          child: Text(
-                                            ' Driver: ${jeep["last_name"]}',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        )
-                                      ]),
-                                      Container(
-                                        child: Icon(Icons.more_horiz),
-                                      )
-                                    ])))
-                            .toList());
-                  }))
+          Container(child: alleyType())
         ])))));
   }
 }

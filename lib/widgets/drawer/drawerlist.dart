@@ -102,10 +102,31 @@ class _DrawerListState extends State<DrawerList> {
                     child: ListTile(
                         leading: Icon(Icons.logout), title: Text('Log Out')),
                     onTap: () {
-                      String status = "OFFLINE";
-                      context.read<Authenticate>().updateUserStatus("OFFLINE");
-                      Navigator.of(context).pushReplacementNamed('/');
-                      FirebaseAuth.instance.signOut();
+                      if (MyApp.broadcast == true) {
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: Text("Broadcast Location is still On"),
+                                content: Text('Turn it off before logging out'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text('CLOSE'),
+                                  )
+                                ],
+                              );
+                            });
+                      } else {
+                        String status = "OFFLINE";
+                        context
+                            .read<Authenticate>()
+                            .updateUserStatus("OFFLINE");
+                        Navigator.of(context).pushReplacementNamed('/');
+                        FirebaseAuth.instance.signOut();
+                      }
                     },
                   ),
                 ],

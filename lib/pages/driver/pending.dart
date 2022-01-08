@@ -24,8 +24,9 @@ class _PendingState extends State<Pending> {
   List getPings = [];
   var driverPlate;
   var placeValue;
+  int seatCap;
   Stream<QuerySnapshot> pendingpings;
-  var current_occupied;
+  int current_occupied;
   String useruid = FirebaseAuth.instance.currentUser.uid;
 
   @override
@@ -34,6 +35,7 @@ class _PendingState extends State<Pending> {
     fetchDriverPlate();
     fetchPingList();
     fetchCurrentOccupied();
+    fetchGetSeatCapacity();
   }
 
   fetchDriverPlate() async {
@@ -44,6 +46,19 @@ class _PendingState extends State<Pending> {
       if (mounted) {
         setState(() {
           driverPlate = result;
+        });
+      }
+    }
+  }
+
+  fetchGetSeatCapacity() async {
+    dynamic result = await context.read<Authenticate>().getSeatCapacity();
+    if (result == null) {
+      print('Unable to retreive seat capacity(pending.dart)');
+    } else {
+      if (mounted) {
+        setState(() {
+          seatCap = result;
         });
       }
     }
@@ -114,22 +129,48 @@ class _PendingState extends State<Pending> {
             ),
           ),
           NavigationalContainer(this.pageName),
-          /*Container(
-              alignment: Alignment.centerRight,
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-              child: RichText(
-                text: TextSpan(
-                    text: "Total Pending :",
-                    style: TextStyle(
-                        color: Colors.black, fontWeight: FontWeight.bold),
-                    children: <TextSpan>[
-                      TextSpan(
-                          text: pending.length.toString(),
-                          style: TextStyle(
-                              color: Colors.redAccent,
-                              fontWeight: FontWeight.bold)),
-                    ]),
-              )),*/
+          Container(
+            alignment: Alignment.centerLeft,
+            padding: EdgeInsets.symmetric(horizontal: 5, vertical: 10),
+            child: InkWell(
+                onTap: () {
+                  if (current_occupied <= seatCap) {
+                    setState(() {
+                      current_occupied++;
+                    });
+                    context
+                        .read<Authenticate>()
+                        .updateOccupied(current_occupied);
+                  } else if (current_occupied > seatCap) {
+                    context.read<Authenticate>().updateOccupied(seatCap);
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: Text("Onboard Already At Max Capacity"),
+                            actions: <Widget>[
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: Text('CLOSE'),
+                              )
+                            ],
+                          );
+                        });
+                  }
+                },
+                child: Container(
+                    margin: EdgeInsets.symmetric(horizontal: 10),
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    decoration: BoxDecoration(
+                        color: Colors.yellow[700],
+                        borderRadius: BorderRadius.all(Radius.circular(5))),
+                    child: Text(
+                      'Load Anonymous+',
+                      style: TextStyle(color: Colors.white),
+                    ))),
+          ),
           Container(
               child: StreamBuilder(
                   stream: pendingpings = FirebaseFirestore.instance

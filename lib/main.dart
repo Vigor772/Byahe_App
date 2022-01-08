@@ -24,6 +24,8 @@ class MyApp extends StatelessWidget {
   static bool inboard = false;
   static bool commuter = false;
   static bool driver = true;
+  static bool clicked_back = false;
+  static bool clicked_forward = false;
 
   @override
   Widget build(BuildContext context) {

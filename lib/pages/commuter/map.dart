@@ -610,11 +610,33 @@ class _MapState extends State<Map> {
                                                 )),
                                             ElevatedButton(
                                                 onPressed: () {
-                                                  Navigator.of(context).push(
-                                                      MaterialPageRoute(
-                                                          builder: (context) =>
-                                                              ReserveVehicle(
-                                                                  routeData)));
+                                                  if (routeData['uid'] ==
+                                                      useruid) {
+                                                    showDialog(
+                                                        context: context,
+                                                        builder: (context) {
+                                                          return AlertDialog(
+                                                            title: Text(
+                                                                "You can't book to yourself"),
+                                                            actions: <Widget>[
+                                                              TextButton(
+                                                                onPressed: () {
+                                                                  Navigator.pop(
+                                                                      context);
+                                                                },
+                                                                child: Text(
+                                                                    'CLOSE'),
+                                                              )
+                                                            ],
+                                                          );
+                                                        });
+                                                  } else {
+                                                    Navigator.of(context).push(
+                                                        MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                ReserveVehicle(
+                                                                    routeData)));
+                                                  }
                                                 },
                                                 style: ElevatedButton.styleFrom(
                                                     onPrimary:

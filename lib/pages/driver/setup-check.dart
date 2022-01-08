@@ -3,6 +3,7 @@ import 'package:byahe_app/pages/driver/setup-alley.dart';
 import 'package:byahe_app/pages/login_auth.dart';
 import 'package:byahe_app/widgets/drawer/drawerheader.dart';
 import 'package:byahe_app/widgets/drawer/drawerlist.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:byahe_app/widgets/topbarmod.dart';
@@ -21,9 +22,11 @@ class _SetupCheckState extends State<SetupCheck> {
   int total_drivers_area = 55;
   int total_drivers_route = 10;
   var total_drivers;
+  List routes = [];
   var currentDriverRoute;
-  List activeSameRoute = [];
+  var activeSameRoute;
   var sameRouteCounter = 0;
+  Stream<QuerySnapshot> sameRoute;
 
   @override
   initState() {
@@ -61,8 +64,9 @@ class _SetupCheckState extends State<SetupCheck> {
   }
 
   fetchActiveDriversRoute() async {
-    dynamic result =
-        await context.read<Authenticate>().getTotalDriversInRoute();
+    dynamic result = await context
+        .read<Authenticate>()
+        .getTotalDriversInRoute(currentDriverRoute);
     if (result == null) {
       print('Unable to retreive activedriverRoute (setup-check.dart)');
     } else {
@@ -173,39 +177,40 @@ class _SetupCheckState extends State<SetupCheck> {
                             color: Colors.yellow[700],
                             fontSize: 50,
                             fontWeight: FontWeight.bold),
-                      )
+                      ),
+                      Text('TOTAL DRIVERS ACTIVE IN THE SAME ROUTE',
+                          style: TextStyle(
+                              color: Colors.yellow[700],
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold)),
+                      StreamBuilder(
+                          stream: sameRoute = FirebaseFirestore.instance
+                              .collection('users')
+                              .where('route_path',
+                                  isEqualTo: currentDriverRoute)
+                              .where('user_type', isEqualTo: "Driver")
+                              .where('status', isEqualTo: 'ONLINE')
+                              .snapshots(),
+                          builder:
+                              (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                            if (snapshot.hasError) {
+                              return Text('Failed to Retreive Info',
+                                  style: TextStyle(color: Colors.white));
+                            }
+                            if (snapshot.hasData == false) {
+                              return CircularProgressIndicator();
+                            }
+                            routes = snapshot.data.docs;
+                            return Text(
+                              (routes.length.toString()),
+                              style: TextStyle(
+                                  decoration: TextDecoration.underline,
+                                  color: Colors.yellow[700],
+                                  fontSize: 50,
+                                  fontWeight: FontWeight.bold),
+                            );
+                          })
                     ])),
-                Container(
-                  padding: EdgeInsets.all(30),
-                  child: Column(
-                      children: (activeSameRoute != null)
-                          ? activeSameRoute
-                              .map(
-                                (totalSame) => (totalSame != null &&
-                                        totalSame['jeepney_line'] ==
-                                            currentDriverRoute)
-                                    ? Column(children: [
-                                        Text(
-                                            'TOTAL DRIVERS ACTIVE IN THE SAME ROUTE',
-                                            style: TextStyle(
-                                                color: Colors.yellow[700],
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.bold)),
-                                        Text(
-                                          (sameRouteCounter++).toString(),
-                                          style: TextStyle(
-                                              decoration:
-                                                  TextDecoration.underline,
-                                              color: Colors.yellow[700],
-                                              fontSize: 50,
-                                              fontWeight: FontWeight.bold),
-                                        )
-                                      ])
-                                    : Text(""),
-                              )
-                              .toList()
-                          : activeSameRoute.isEmpty),
-                )
               ],
             ),
           )

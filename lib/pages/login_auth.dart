@@ -103,7 +103,7 @@ class Authenticate {
     String status = "ONLINE";
     bool broadcast = false;
     String route_path;
-    String seats_avail;
+    int seats_avail;
     bool queue = false;
     int current_occupied = 0;
     try {
@@ -162,12 +162,13 @@ class Authenticate {
     return usertype;
   }
 
-  Future updateVehicleStatus(String status) {
+  Future updateVehicleStatus(String status, alley_time) {
     String useruid = FirebaseAuth.instance.currentUser.uid;
     return FirebaseFirestore.instance
         .collection('users')
         .doc(useruid)
-        .update({'vehicle_status': status})
+        .set({'vehicle_status': status, 'alley_time': alley_time},
+            SetOptions(merge: true))
         .then((value) => print('Status updated'))
         .catchError((onError) => print('Failed to update status: $onError'));
   }
@@ -419,20 +420,21 @@ class Authenticate {
     }
   }
 
-  Future getTotalDriversInRoute() async {
-    List totalDriversInRoute = [];
+  Future getTotalDriversInRoute(route_path) async {
+    var counter = 0;
     try {
       await FirebaseFirestore.instance
           .collection('users')
+          .where('route_path', isEqualTo: route_path)
           .where('user_type', isEqualTo: "Driver")
           .where('status', isEqualTo: 'ONLINE')
           .get()
           .then((query) {
         query.docs.forEach((doc) {
-          totalDriversInRoute.add(doc.data());
+          counter++;
         });
       });
-      return totalDriversInRoute;
+      return counter++;
     } catch (e) {
       return e.toString();
     }
@@ -444,7 +446,7 @@ class Authenticate {
 
     DocumentSnapshot usercat =
         await FirebaseFirestore.instance.collection('users').doc(useruid).get();
-    driverRoute = usercat['jeepney_line'];
+    driverRoute = usercat['route_path'];
     return driverRoute;
   }
 
@@ -561,5 +563,14 @@ class Authenticate {
         await FirebaseFirestore.instance.collection('users').doc(useruid).get();
     current_occupied = usercat['current_occupied'];
     return current_occupied;
+  }
+
+  Future getSeatCapacity() async {
+    var max_cap;
+    String useruid = FirebaseAuth.instance.currentUser.uid;
+    DocumentSnapshot usercat =
+        await FirebaseFirestore.instance.collection('users').doc(useruid).get();
+    max_cap = usercat['seats_avail'];
+    return max_cap;
   }
 }
