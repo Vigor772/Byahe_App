@@ -12,6 +12,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart' as locate;
 import 'package:provider/src/provider.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 // ignore: implementation_imports
 
 // ignore: must_be_immutable
@@ -43,8 +44,14 @@ class _MapState extends State<Map> {
   GoogleMapController _controller;
   Marker marker;
   Marker marker2;
+  Polyline drivertrack;
+  PolylinePoints polylinepoints = PolylinePoints();
   List<Marker> usersMarkers = [];
+  List<Polyline> polylinestracker = [];
+  List<LatLng> forpolylines = [];
+  List<PolylineWayPoint> waypoints = [];
   Circle circle;
+  String apiKey = "AIzaSyC1MT12YRBBuDYKd1SMvFLOyiRM-PPE-wU";
 
   Future<Uint8List> getMarker() async {
     ByteData byteData =
@@ -100,9 +107,10 @@ class _MapState extends State<Map> {
         }
       });
     });
-    print('Driver Coordinates: $driverLat, $driverLong');
+    //print('Driver Coordinates: $driverLat, $driverLong');
     return setState(() {
       driverLocation = LatLng(driverLat, driverLong);
+      //forpolylines.add(driverLocation);
       marker = Marker(
           markerId: MarkerId(routeData['vehicle_plate_number']),
           position: driverLocation,
@@ -119,7 +127,93 @@ class _MapState extends State<Map> {
           strokeColor: Colors.blue,
           center: driverLocation,
           fillColor: Colors.blue.withAlpha(70));
+      /*drivertrack = Polyline(
+        polylineId: PolylineId(routeData['vehicle_plate_number']),
+        visible: true,
+        points: forpolylines,
+        color: Colors.red,
+      );*/
     });
+  }
+
+  routeDirection() async {
+    try {
+      await FirebaseFirestore.instance
+          .collection("subroutes")
+          .where('route_path', isEqualTo: routeData['route_path'])
+          .get()
+          .then((value) {
+        if (value.docs.isNotEmpty) {
+          value.docs.forEach((element) {
+            showrouteDirections(element.data());
+          });
+        }
+      });
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  void showrouteDirections(coords) async {
+    //from database ni na values geopoints ni sila instead na tagsa2 pag add sa database sa lat ug long
+    // ako silang giusa as geopoints tas access per index lang, mao unta ning pathing sa route sa lumbia na jeep
+    LatLng routepoint1 =
+        LatLng(coords['point1'].latitude, coords['point1'].longitude);
+    LatLng routepoint2 =
+        LatLng(coords['point2'].latitude, coords['point2'].longitude);
+    LatLng routepoint3 =
+        LatLng(coords['point3'].latitude, coords['point3'].longitude);
+    LatLng routepoint4 =
+        LatLng(coords['point4'].latitude, coords['point4'].longitude);
+    LatLng routepoint5 =
+        LatLng(coords['point5'].latitude, coords['point5'].longitude);
+    LatLng routepoint6 =
+        LatLng(coords['point6'].latitude, coords['point6'].longitude);
+    LatLng routepoint7 =
+        LatLng(coords['point7'].latitude, coords['point7'].longitude);
+    LatLng routepoint8 =
+        LatLng(coords['point8'].latitude, coords['point8'].longitude);
+    forpolylines.add(routepoint1);
+    forpolylines.add(routepoint2);
+    forpolylines.add(routepoint3);
+    forpolylines.add(routepoint4);
+    forpolylines.add(routepoint5);
+    forpolylines.add(routepoint6);
+    forpolylines.add(routepoint7);
+    forpolylines.add(routepoint8);
+    //kani nga code ang gusto unta nako itry pero walay output gagawas basin tungod sa api
+    /*waypoints.add(
+        PolylineWayPoint(location: routepoint1.toString(), stopOver: true));
+    waypoints.add(
+        PolylineWayPoint(location: routepoint2.toString(), stopOver: true));
+    waypoints.add(
+        PolylineWayPoint(location: routepoint3.toString(), stopOver: true));
+    waypoints.add(
+        PolylineWayPoint(location: routepoint4.toString(), stopOver: true));
+    waypoints.add(
+        PolylineWayPoint(location: routepoint5.toString(), stopOver: true));
+    waypoints.add(
+        PolylineWayPoint(location: routepoint6.toString(), stopOver: true));
+    PolylineResult result = await polylinepoints.getRouteBetweenCoordinates(
+        apiKey,
+        PointLatLng(coords['point1'].latitude, coords['point1'].longitude),
+        PointLatLng(coords['point8'].latitude, coords['point8'].longitude),
+        travelMode: TravelMode.driving,
+        wayPoints: waypoints,
+        optimizeWaypoints: true);
+    if (result.points.isNotEmpty) {
+      result.points.forEach((PointLatLng point) {
+        forpolylines.add(LatLng(point.latitude, point.longitude));
+      });
+    }*/
+    setState(() {});
+    drivertrack = Polyline(
+      polylineId: PolylineId(coords['route_path']),
+      visible: true,
+      points: forpolylines,
+      color: Colors.red,
+    );
+    polylinestracker.add(drivertrack);
   }
 
   void updateMarkerCommuter(
@@ -169,11 +263,12 @@ class _MapState extends State<Map> {
           _controller.animateCamera(CameraUpdate.newCameraPosition(
               new CameraPosition(
                   bearing: 192.345345345,
-                  target: LatLng(routeData['latitude'], routeData['longitude']),
+                  target: LatLng(newLocalData.latitude, newLocalData.longitude),
                   tilt: 0,
                   zoom: 18)));
           updateMarkerAndCircle(newLocalData, imageData);
           usersMarkers.add(marker);
+          //polylinestracker.add(drivertrack);
         }
       });
     } on PlatformException catch (e) {
@@ -203,15 +298,6 @@ class _MapState extends State<Map> {
     }
   }
 
-  /*driverDetails(driveruid) {
-    setState(() {
-      driverInfo = FirebaseFirestore.instance
-          .collection('users')
-          .doc(driveruid)
-          .snapshots();
-    });
-  }*/
-
   @override
   void initState() {
     super.initState();
@@ -220,6 +306,7 @@ class _MapState extends State<Map> {
     fetchEmail();
     fetchCurrentUser();
     fetchPingStatus();
+    routeDirection();
   }
 
   @override
@@ -366,6 +453,7 @@ class _MapState extends State<Map> {
                                   target: LatLng(snapshot.data['latitude'],
                                       snapshot.data['longitude'])),
                               markers: Set.of(usersMarkers),
+                              polylines: Set.of(polylinestracker),
                               circles: Set.of((circle != null) ? [circle] : []),
                               onMapCreated:
                                   (GoogleMapController controller) async {
@@ -686,7 +774,7 @@ class _MapState extends State<Map> {
       List<Placemark> placemarks = await placemarkFromCoordinates(
           currentLocation.latitude, currentLocation.longitude);
       Placemark place = placemarks[0];
-      placeValue = '${place.street}, ${place.locality}';
+      placeValue = '${place.street}, ${place.locality}, ${place.name}';
       await FirebaseFirestore.instance.collection('users').doc(useruid).set({
         'place_in_words': placeValue,
       }, SetOptions(merge: true));

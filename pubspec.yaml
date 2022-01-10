@@ -36,6 +36,7 @@ dependencies:
   location_platform_interface: "^2.3.0"
   permission_handler: "^8.3.0"
   geocoding: '^2.0.1'
+  flutter_polyline_points: "^1.0.0"
   
 
   # The following adds the Cupertino Icons font to your application.
