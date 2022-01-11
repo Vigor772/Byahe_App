@@ -121,9 +121,7 @@ class _DrawerListState extends State<DrawerList> {
                             });
                       } else {
                         String status = "OFFLINE";
-                        context
-                            .read<Authenticate>()
-                            .updateUserStatus("OFFLINE");
+                        context.read<Authenticate>().updateUserStatus(status);
                         Navigator.of(context).pushReplacementNamed('/');
                         FirebaseAuth.instance.signOut();
                       }

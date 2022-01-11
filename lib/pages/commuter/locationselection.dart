@@ -2,6 +2,7 @@ import 'package:byahe_app/pages/commuter/routeselection.dart';
 //import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:byahe_app/widgets/drawer/drawerheader.dart';
 import 'package:byahe_app/widgets/drawer/drawerlist.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:byahe_app/widgets/topbarmod.dart';
 import 'package:byahe_app/pages/login_auth.dart';
@@ -16,12 +17,26 @@ class LocationSelection extends StatefulWidget {
 }
 
 class _LocationSelectionState extends State<LocationSelection> {
-  final myController = TextEditingController();
+  TextEditingController myController = new TextEditingController();
+  Stream<QuerySnapshot> searchLocation;
+  String valueToSearch;
   List locationList = [];
 
   @override
   void initState() {
     fetchLocationList();
+    myController.addListener(() {
+      if (myController.text.trim().isNotEmpty) {
+        setState(() {
+          valueToSearch = myController.text.trim()[0].toUpperCase() +
+              myController.text.trim().substring(1);
+        });
+      } else {
+        setState(() {
+          myController.text.trim().isEmpty;
+        });
+      }
+    });
     super.initState();
   }
 
@@ -99,27 +114,81 @@ class _LocationSelectionState extends State<LocationSelection> {
               Container(
                   //color: Colors.yellow[700],
                   padding: EdgeInsets.only(top: 10),
-                  child: ListView.builder(
-                      scrollDirection: Axis.vertical,
-                      shrinkWrap: true,
-                      itemCount: locationList.length,
-                      itemBuilder: (context, index) {
-                        return Card(
-                            color: Colors.yellow[700],
-                            child: ListTile(
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => RouteSelection(
-                                            locationList[index]['jeep_line'])));
-                              },
-                              title: Text(locationList[index]['jeep_line'],
-                                  style: TextStyle(color: Colors.white)),
-                              subtitle: Text(locationList[index]['location_id'],
-                                  style: TextStyle(color: Colors.white)),
-                            ));
-                      }))
+                  child: (myController.text.trim().isEmpty)
+                      ? ListView.builder(
+                          scrollDirection: Axis.vertical,
+                          shrinkWrap: true,
+                          itemCount: locationList.length,
+                          itemBuilder: (context, index) {
+                            return Card(
+                                color: Colors.yellow[700],
+                                child: ListTile(
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                RouteSelection(
+                                                    locationList[index]
+                                                        ['jeep_line'])));
+                                  },
+                                  title: Text(locationList[index]['jeep_line'],
+                                      style: TextStyle(color: Colors.white)),
+                                  subtitle: Text(
+                                      locationList[index]['location_id'],
+                                      style: TextStyle(color: Colors.white)),
+                                ));
+                          })
+                      : StreamBuilder(
+                          stream: searchLocation = FirebaseFirestore.instance
+                              .collection('locations')
+                              .where('jeep_line', isEqualTo: valueToSearch)
+                              .snapshots(),
+                          builder:
+                              (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                            if (snapshot.hasError) {
+                              return Container(
+                                  margin: EdgeInsets.only(top: 5),
+                                  child: Center(
+                                      child: Text('Location not Found')));
+                            }
+                            if (snapshot.hasData == false) {
+                              return Container(
+                                  decoration:
+                                      BoxDecoration(color: Colors.transparent),
+                                  child: Center(
+                                      child: CircularProgressIndicator()));
+                            }
+                            if (snapshot.data.docs == null) {
+                              return Container(
+                                  decoration:
+                                      BoxDecoration(color: Colors.transparent),
+                                  child: Center(
+                                      child: Text('Location not Found')));
+                            }
+                            return Column(
+                              children: snapshot.data.docs
+                                  .map((location) => Card(
+                                      color: Colors.yellow[700],
+                                      child: ListTile(
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      RouteSelection(location[
+                                                          'jeep_line'])));
+                                        },
+                                        title: Text(location['jeep_line'],
+                                            style:
+                                                TextStyle(color: Colors.white)),
+                                        subtitle: Text(location['location_id'],
+                                            style:
+                                                TextStyle(color: Colors.white)),
+                                      )))
+                                  .toList(),
+                            );
+                          }))
             ],
           ),
         ))));

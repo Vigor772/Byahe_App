@@ -31,8 +31,8 @@ class _SetupAlleyState extends State<SetupAlley> {
   String driverPath;
   String driverPlate;
   bool broadcast;
-  var alley_state;
   var vehicleStatus;
+  var alley_state;
   var alleyList = [];
   final locate.Location location = locate.Location();
   StreamSubscription<locate.LocationData> _locationSubscription;
@@ -119,43 +119,13 @@ class _SetupAlleyState extends State<SetupAlley> {
     }
   }
 
-  Container alleyFunction() {
+  alleyFunction() {
     if (MyApp.alley == false) {
-      return Container(
-        margin: EdgeInsets.only(top: 10),
-        padding: EdgeInsets.symmetric(horizontal: 100, vertical: 17.5),
-        decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.5),
-                spreadRadius: 3,
-                blurRadius: 7,
-                offset: Offset(0, 3), // changes position of shadow
-              ),
-            ],
-            border: Border.all(width: 2.0, color: Colors.yellow[700]),
-            color: Colors.white,
-            borderRadius: BorderRadius.all(Radius.circular(5))),
-        child: Text('ALLEY NOW', style: TextStyle(color: Colors.yellow[700])),
-      );
+      return Text('CONFIRM ALLEY',
+          style: TextStyle(
+              fontWeight: FontWeight.bold, color: Colors.yellow[700]));
     } else {
-      return Container(
-        margin: EdgeInsets.only(top: 10),
-        padding: EdgeInsets.symmetric(horizontal: 100, vertical: 17.5),
-        decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.5),
-                spreadRadius: 3,
-                blurRadius: 7,
-                offset: Offset(0, 3), // changes position of shadow
-              ),
-            ],
-            border: Border.all(width: 2.0, color: Colors.redAccent),
-            color: Colors.redAccent,
-            borderRadius: BorderRadius.all(Radius.circular(5))),
-        child: Text('STOP ALLEY', style: TextStyle(color: Colors.white)),
-      );
+      return Text('STOP ALLEY', style: TextStyle(color: Colors.white));
     }
   }
 
@@ -200,7 +170,7 @@ class _SetupAlleyState extends State<SetupAlley> {
               .collection('users')
               .where('user_type', isEqualTo: "Driver")
               .where('route_path', isEqualTo: driverPath)
-              .where('vehicle_status', isEqualTo: "Alley-From-Origin")
+              .where('vehicle_status', isEqualTo: "ALLEY-FROM-ORIGIN")
               .orderBy('alley_time', descending: false)
               .snapshots(),
           builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -264,7 +234,7 @@ class _SetupAlleyState extends State<SetupAlley> {
               .collection('users')
               .where('user_type', isEqualTo: "Driver")
               .where('route_path', isEqualTo: driverPath)
-              .where('vehicle_status', isEqualTo: 'Alley-To-Origin')
+              .where('vehicle_status', isEqualTo: 'ALLEY-TO-ORIGIN')
               .orderBy('alley_time', descending: false)
               .snapshots(),
           builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -330,79 +300,33 @@ class _SetupAlleyState extends State<SetupAlley> {
     }
   }
 
-  broadcastLocation(/*bool broadcast*/) {
-    if (MyApp.broadcast /*broadcast*/ == false) {
+  broadcastLocation() {
+    if (MyApp.broadcast == false) {
       return Container(
-        padding: EdgeInsets.symmetric(vertical: 15),
-        decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.5),
-                spreadRadius: 3,
-                blurRadius: 7,
-                offset: Offset(0, 3), // changes position of shadow
-              ),
-            ],
-            border: Border.all(width: 2.0, color: Colors.yellow[700]),
-            color: Colors.white,
-            borderRadius: BorderRadius.all(Radius.circular(5))),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Container(
-              child: Icon(
-                Icons.place,
-                color: Colors.yellow[700],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child: Text('BROADCAST',
-                  style: TextStyle(color: Colors.yellow[700])),
-            )
-          ],
-        ),
-      );
-    } else if (MyApp.broadcast /*broadcast*/ == true) {
+          padding: EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+          decoration: BoxDecoration(
+              color: Colors.green,
+              borderRadius: BorderRadius.all(Radius.circular(15))),
+          child: Text(
+            'BROADCAST',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ));
+    } else if (MyApp.broadcast == true) {
       return Container(
-        margin: EdgeInsets.only(top: 10),
-        padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
-        decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.5),
-                spreadRadius: 3,
-                blurRadius: 7,
-                offset: Offset(0, 3), // changes position of shadow
-              ),
-            ],
-            border: Border.all(width: 2.0, color: Colors.redAccent),
-            color: Colors.redAccent,
-            borderRadius: BorderRadius.all(Radius.circular(5))),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Container(
-              child: Icon(
-                Icons.place,
-                color: Colors.white,
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child:
-                  Text('STOP BROADCAST', style: TextStyle(color: Colors.white)),
-            )
-          ],
-        ),
-      );
+          padding: EdgeInsets.symmetric(vertical: 15, horizontal: 50),
+          decoration: BoxDecoration(
+              color: Colors.redAccent,
+              borderRadius: BorderRadius.all(Radius.circular(15))),
+          child: Text(
+            'STOP',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ));
     }
   }
 
   @override
   void dispose() {
     _locationSubscription.cancel();
-    context.read<Authenticate>().updateBroadCast(false);
     super.dispose();
   }
 
@@ -475,146 +399,219 @@ class _SetupAlleyState extends State<SetupAlley> {
               ],
             ),
           ),
-          Container(
-              padding: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-              child: Column(children: <Widget>[
-                InkWell(
-                    onTap: () {
-                      if (MyApp.broadcast == true) /*(broadcast == true)*/ {
-                        context.read<Authenticate>().updateBroadCast(false);
-                        stopLiveLocation();
-                        //MyApp.broadcast = false;
-                      } else if (MyApp.broadcast /*broadcast*/ == false) {
-                        //MyApp.broadcast = true;
-                        context.read<Authenticate>().updateBroadCast(true);
-                        getLiveLocation();
-                      }
-                      setState(() {
-                        MyApp.broadcast = !MyApp.broadcast;
-                      });
-                    },
-                    child: broadcastLocation()),
-                InkWell(
-                    onTap: () {
-                      if (MyApp.alley == true) {
-                        /*for (var map in alleyList) {
-                              if (map['vehicle_plate_number'] == driverPlate) {
-                                alleyList.remove(map);
-                                context
-                                    .read<Authenticate>()
-                                    .updateVehicleStatus(status = 'DRIVING');
-                                break;
-                              }
-                            }*/
+          Column(children: <Widget>[
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 3,
+                      blurRadius: 7,
+                      offset: Offset(0, 3), // changes position of shadow
+                    ),
+                  ],
+                  border: Border.all(width: 2.0, color: Colors.yellow[700]),
+                  borderRadius: BorderRadius.all(Radius.circular(15))),
+              child: Column(
+                children: [
+                  Container(
+                      child: MyApp.broadcast
+                          ? Container(
+                              padding: EdgeInsets.symmetric(horizontal: 40),
+                              child: Image.asset('assets/broadcast.gif'))
+                          : Image.asset(
+                              'assets/undraw_connected_world_wuay-removebg-preview.png')),
+                  InkWell(
+                      onTap: () {
+                        if (MyApp.broadcast == true) {
+                          context.read<Authenticate>().updateBroadCast(false);
+                          stopLiveLocation();
+                        } else if (MyApp.broadcast == false) {
+                          context.read<Authenticate>().updateBroadCast(true);
+                          getLiveLocation();
+                        }
                         setState(() {
-                          alley_state = 'DRIVING';
+                          MyApp.broadcast = !MyApp.broadcast;
                         });
-                        var clear_alleydate;
-                        context
-                            .read<Authenticate>()
-                            .updateVehicleStatus(alley_state, clear_alleydate);
-                      }
-                      /*alleyList
-                                .add({'vehicle_plate_number': driverPlate});*/
-
-                      if ((MyApp.clicked_forward == true ||
-                              MyApp.clicked_back == true) &&
-                          MyApp.alley == false) {
-                        context.read<Authenticate>().updateVehicleStatus(
-                            alley_state, Timestamp.now() /*DateTime.now()*/);
-                      }
-                      if (MyApp.clicked_forward == false &&
-                          MyApp.clicked_back == false) {
-                        MyApp.alley = false;
-                        showDialog(
-                            context: context,
-                            builder: (context) {
-                              return AlertDialog(
-                                title: Text("Please Select Alley Category"),
-                                actions: <Widget>[
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                    child: Text('CLOSE'),
-                                  )
-                                ],
-                              );
-                            });
-                      }
-
-                      setState(() {
-                        MyApp.alley = !MyApp.alley;
-                      });
-                    },
-                    child: alleyFunction())
-              ])),
+                      },
+                      child: broadcastLocation()),
+                ],
+              ),
+            ),
+          ]),
           Container(
             margin: EdgeInsets.symmetric(vertical: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+            child: Column(
               children: <Widget>[
-                InkWell(
-                    onTap: () {
-                      setState(() {
-                        alley_state = "Alley-From-Origin";
-                        MyApp.clicked_forward = !MyApp.clicked_forward;
-                        MyApp.clicked_back = false;
-                      });
-                    },
-                    child: Container(
-                        width: 160,
-                        height: 50,
-                        decoration: BoxDecoration(
-                            border: Border.all(
-                                width: 2.0,
-                                color: MyApp.clicked_forward
-                                    ? Colors.white
-                                    : Colors.yellow[700]),
-                            color: MyApp.clicked_forward
-                                ? Colors.redAccent
-                                : Colors.white,
-                            borderRadius: BorderRadius.all(Radius.circular(5))),
-                        child: Container(
-                          child: Icon(Icons.arrow_forward_sharp,
+                Container(
+                    child: Text("$driverPath Alley",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.grey, fontWeight: FontWeight.bold))),
+                Container(
+                  margin: EdgeInsets.symmetric(vertical: 8),
+                  child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          alley_state = "ALLEY-FROM-ORIGIN";
+                          MyApp.clicked_forward = !MyApp.clicked_forward;
+                          MyApp.clicked_back = false;
+                        });
+                      },
+                      child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 90, vertical: 15),
+                          decoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  spreadRadius: 3,
+                                  blurRadius: 7,
+                                  offset: Offset(
+                                      0, 3), // changes position of shadow
+                                ),
+                              ],
+                              border: Border.all(
+                                  width: 2.0,
+                                  color: MyApp.clicked_forward
+                                      ? Colors.white
+                                      : Colors.yellow[700]),
                               color: MyApp.clicked_forward
-                                  ? Colors.white
-                                  : Colors.yellow[700]),
-                        ))),
+                                  ? Colors.yellow[700]
+                                  : Colors.white,
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(20))),
+                          child: Container(
+                              child: Text('ALLEY-FROM-ORIGIN',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: MyApp.clicked_forward
+                                          ? Colors.white
+                                          : Colors.yellow[700]))))),
+                ),
                 InkWell(
                     onTap: () {
                       setState(() {
-                        alley_state = 'Alley-To-Origin';
+                        alley_state = 'ALLEY-TO-ORIGIN';
                         MyApp.clicked_back = !MyApp.clicked_back;
                         MyApp.clicked_forward = false;
                       });
                     },
                     child: Container(
-                        width: 160,
-                        height: 50,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 100, vertical: 15),
                         decoration: BoxDecoration(
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                spreadRadius: 3,
+                                blurRadius: 7,
+                                offset:
+                                    Offset(0, 3), // changes position of shadow
+                              ),
+                            ],
                             border: Border.all(
                                 width: 2.0,
                                 color: MyApp.clicked_back
                                     ? Colors.white
                                     : Colors.yellow[700]),
                             color: MyApp.clicked_back
-                                ? Colors.redAccent
+                                ? Colors.yellow[700]
                                 : Colors.white,
-                            borderRadius: BorderRadius.all(Radius.circular(5))),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(20))),
                         child: Container(
-                          child: Icon(Icons.arrow_back_sharp,
-                              color: MyApp.clicked_back
-                                  ? Colors.white
-                                  : Colors.yellow[700]),
-                        ))),
+                            child: Text('ALLEY-TO-ORIGIN',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: MyApp.clicked_back
+                                        ? Colors.white
+                                        : Colors.yellow[700]))))),
               ],
             ),
           ),
           Container(
-              child: Text("$driverPath Alley",
-                  style: TextStyle(color: Colors.grey))),
-          Container(child: alleyType())
+            child: Column(
+              children: [
+                Container(
+                  alignment: Alignment.centerRight,
+                  margin: EdgeInsets.symmetric(vertical: 10),
+                  child: InkWell(
+                      onTap: () {
+                        if (MyApp.alley == true) {
+                          setState(() {
+                            alley_state = 'DRIVING';
+                          });
+                          var clear_alleydate;
+                          context.read<Authenticate>().updateVehicleStatus(
+                              alley_state, clear_alleydate);
+                        }
+                        if ((MyApp.clicked_forward == true ||
+                                MyApp.clicked_back == true) &&
+                            MyApp.alley == false) {
+                          context.read<Authenticate>().updateVehicleStatus(
+                              alley_state, Timestamp.now());
+                        }
+                        if (MyApp.clicked_forward == false &&
+                            MyApp.clicked_back == false &&
+                            MyApp.alley == false) {
+                          setState(() {
+                            MyApp.alley = false;
+                          });
+                          showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: Text("Please Select Alley Category"),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text('CLOSE'),
+                                    )
+                                  ],
+                                );
+                              });
+                        }
+
+                        setState(() {
+                          MyApp.alley = !MyApp.alley;
+                        });
+                      },
+                      child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 35, vertical: 10),
+                          decoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  spreadRadius: 3,
+                                  blurRadius: 7,
+                                  offset: Offset(
+                                      0, 3), // changes position of shadow
+                                ),
+                              ],
+                              border: Border.all(
+                                width: 2.0,
+                                color: (MyApp.alley)
+                                    ? Colors.redAccent
+                                    : Colors.yellow[700],
+                              ),
+                              color: (MyApp.alley)
+                                  ? Colors.redAccent
+                                  : Colors.white,
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(20))),
+                          child: Container(child: alleyFunction()))),
+                ),
+                Container(child: alleyType()),
+              ],
+            ),
+          ),
         ])))));
   }
 }

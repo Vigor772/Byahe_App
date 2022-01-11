@@ -8,6 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 //import 'package:byahe_app/widgets/topbarmod.dart';
 import 'package:byahe_app/widgets/driver/navigationalcontainer.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:provider/src/provider.dart';
 import 'package:flutter/painting.dart';
@@ -28,6 +29,7 @@ class _PendingState extends State<Pending> {
   Stream<QuerySnapshot> pendingpings;
   int current_occupied;
   String useruid = FirebaseAuth.instance.currentUser.uid;
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
   @override
   initState() {
@@ -36,6 +38,49 @@ class _PendingState extends State<Pending> {
     fetchPingList();
     fetchCurrentOccupied();
     fetchGetSeatCapacity();
+    var initializationSettingAndroid =
+        new AndroidInitializationSettings('ic_launcher');
+    var initializationSettings =
+        new InitializationSettings(android: initializationSettingAndroid);
+    flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
+    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: onSelectnotification);
+  }
+
+  Future onSelectnotification(String payload) async {
+    showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+              title: const Text('User Pinged'),
+              content: Text(payload),
+              actions: <Widget>[
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (context) => Pending()));
+                    },
+                    child: Text('OK'))
+              ],
+            ));
+  }
+
+  Future alertDriverOfPing() async {
+    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+        "user pings", "pending commuters",
+        channelDescription: "notify driver when pinged",
+        enableVibration: true,
+        playSound: true,
+        importance: Importance.max,
+        priority: Priority.high);
+    NotificationDetails platformChannelSpecifics =
+        new NotificationDetails(android: androidPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      "A Commuter Pinged",
+      "View in order to respond",
+      platformChannelSpecifics,
+      payload: "Navigate to Pending Panel",
+    );
   }
 
   fetchDriverPlate() async {
@@ -88,15 +133,6 @@ class _PendingState extends State<Pending> {
       });
     }
   }
-
-  /*Future getAddressFromCoordinates(var latitude, var longitude) async {
-    List<Placemark> placemarks =
-        await placemarkFromCoordinates(latitude, longitude);
-    Placemark place = placemarks[0];
-    setState(() {
-      placeValue = '${place.street}, ${place.locality}';
-    });
-  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -189,6 +225,9 @@ class _PendingState extends State<Pending> {
                       return Container(
                           decoration: BoxDecoration(color: Colors.transparent),
                           child: Center(child: CircularProgressIndicator()));
+                    }
+                    if (snapshot.data.docs.isNotEmpty) {
+                      alertDriverOfPing();
                     }
                     return Column(
                       children: snapshot.data.docs

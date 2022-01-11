@@ -55,7 +55,6 @@ class VerifySession extends StatelessWidget {
     if (user != null) {
       context.read<Authenticate>().updateUserStatus(status);
       return LocationSelection();
-      //return Onboard();
     }
     return LoginPage();
   }

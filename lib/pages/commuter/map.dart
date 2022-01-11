@@ -206,7 +206,6 @@ class _MapState extends State<Map> {
         forpolylines.add(LatLng(point.latitude, point.longitude));
       });
     }*/
-    setState(() {});
     drivertrack = Polyline(
       polylineId: PolylineId(coords['route_path']),
       visible: true,
@@ -774,7 +773,7 @@ class _MapState extends State<Map> {
       List<Placemark> placemarks = await placemarkFromCoordinates(
           currentLocation.latitude, currentLocation.longitude);
       Placemark place = placemarks[0];
-      placeValue = '${place.street}, ${place.locality}, ${place.name}';
+      placeValue = '${place.street}, ${place.locality}';
       await FirebaseFirestore.instance.collection('users').doc(useruid).set({
         'place_in_words': placeValue,
       }, SetOptions(merge: true));
