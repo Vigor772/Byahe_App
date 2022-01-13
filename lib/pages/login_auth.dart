@@ -99,13 +99,13 @@ class Authenticate {
     String mobnum;
     String platenum;
     String userType;
-    String vehicle_status = 'DRIVING';
+    String vehicle_status;
     String status = "ONLINE";
     bool broadcast = false;
     String route_path;
     int seats_avail;
     bool queue = false;
-    int current_occupied = 0;
+    int current_occupied;
     try {
       await _auth
           .createUserWithEmailAndPassword(email: email, password: password)
@@ -127,7 +127,6 @@ class Authenticate {
           'vehicle_plate_number': platenum,
           'vehicle_status': vehicle_status,
           'current_occupied': current_occupied,
-          'queue': queue,
           'broadcast': broadcast,
           'status': status,
         });
@@ -205,6 +204,25 @@ class Authenticate {
         });
       });
       return locationList;
+    } catch (e) {
+      print(e.toString());
+      return null;
+    }
+  }
+
+  Future getSubrouteList() async {
+    List subrouteList = [];
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('subroutes')
+          .get()
+          .then((query) {
+        query.docs.forEach((doc) {
+          subrouteList.add(doc.data());
+        });
+      });
+      return subrouteList;
     } catch (e) {
       print(e.toString());
       return null;

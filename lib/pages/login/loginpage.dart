@@ -82,12 +82,32 @@ class _LoginPageState extends State<LoginPage> {
                           if (password.isEmpty) {
                             return ("Password is Empty");
                           } else {
-                            context.read<Authenticate>().login(
-                                  email,
-                                  password,
-                                );
-                            userController.clear();
-                            passwordController.clear();
+                            try {
+                              context.read<Authenticate>().login(
+                                    email,
+                                    password,
+                                  );
+                              userController.clear();
+                              passwordController.clear();
+                            } catch (e) {
+                              return showDialog<void>(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      actionsOverflowDirection:
+                                          VerticalDirection.down,
+                                      title: Text(e.toString()),
+                                      actions: <Widget>[
+                                        ElevatedButton(
+                                            child: Text("CLOSE"),
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            })
+                                      ],
+                                    );
+                                  });
+                            }
                           }
                         }
                       },

@@ -1,8 +1,11 @@
+import 'dart:math';
+
 import 'package:byahe_app/pages/register/registerdriverconfirmation.dart';
 import 'package:byahe_app/widgets/closebutton.dart';
 import 'package:byahe_app/pages/login_auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:byahe_app/pages/login/loginpage.dart';
@@ -23,8 +26,50 @@ class _RegisterDriverState extends State<RegisterDriver> {
   TextEditingController platenumController = new TextEditingController();
   TextEditingController routepathController = new TextEditingController();
   TextEditingController seatcapController = new TextEditingController();
+  List locationList = [];
+  List routeList = [];
   final String userType = "Driver";
+  var status = 'ONLINE';
   String useruid;
+  var selectedJeepLine = 'none';
+  var selectedRoute = 'none';
+  var selectedPath = 'none';
+  var vehicle_status = 'DRIVING';
+  int current_occupied = 0;
+  bool broadcast = false;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchLocationList();
+    fetchSubrouteList();
+  }
+
+  fetchLocationList() async {
+    dynamic result = await context.read<Authenticate>().getLocationList();
+    if (result == null) {
+      print('Unable to retreive location list (registerdriver.dart)');
+    } else {
+      if (mounted) {
+        setState(() {
+          locationList = result;
+        });
+      }
+    }
+  }
+
+  fetchSubrouteList() async {
+    dynamic result = await context.read<Authenticate>().getSubrouteList();
+    if (result == null) {
+      print('Unable to retreive route list (registerdriver.dart)');
+    } else {
+      if (mounted) {
+        setState(() {
+          routeList = result;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,41 +145,86 @@ class _RegisterDriverState extends State<RegisterDriver> {
                     border: OutlineInputBorder()),
               )),
           Container(
-              padding: EdgeInsets.only(top: 10),
-              child: TextFormField(
-                controller: jlineController,
+            padding: EdgeInsets.only(top: 10),
+            child: DropdownButtonFormField(
+                isExpanded: true,
+                items: locationList
+                    .map((locations) => new DropdownMenuItem<String>(
+                        value: locations['jeep_line'],
+                        child: Text(
+                          locations['jeep_line'],
+                          overflow: TextOverflow.ellipsis,
+                        )))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedJeepLine = value;
+                  });
+                },
                 decoration: InputDecoration(
-                    enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.yellow[700]),
-                        borderRadius: BorderRadius.circular(17)),
-                    labelText: "Jeepney Line",
-                    border: OutlineInputBorder()),
-              )),
+                  enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.yellow[700]),
+                      borderRadius: BorderRadius.circular(17)),
+                  labelText: "Jeepney Line",
+                  border: OutlineInputBorder(),
+                )),
+          ),
+          Container(
+            padding: EdgeInsets.only(top: 10),
+            child: DropdownButtonFormField(
+                isExpanded: true,
+                items: routeList
+                    .map((routes) => new DropdownMenuItem<String>(
+                        value: routes['jeepney_route'],
+                        child: Text(
+                          routes['jeepney_route'],
+                          overflow: TextOverflow.ellipsis,
+                        )))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedRoute = value;
+                  });
+                },
+                decoration: InputDecoration(
+                  enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.yellow[700]),
+                      borderRadius: BorderRadius.circular(17)),
+                  labelText: "Jeepney Route",
+                  border: OutlineInputBorder(),
+                )),
+          ),
+          Container(
+            padding: EdgeInsets.only(top: 10),
+            child: DropdownButtonFormField(
+                isExpanded: true,
+                items: routeList
+                    .map((path) => new DropdownMenuItem<String>(
+                        value: path['route_path'],
+                        child: Text(
+                          path['route_path'],
+                          overflow: TextOverflow.ellipsis,
+                        )))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedPath = value;
+                  });
+                },
+                decoration: InputDecoration(
+                  enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.yellow[700]),
+                      borderRadius: BorderRadius.circular(17)),
+                  labelText: "Route Path(Ex. Gusa-Cugman-Lapasan...",
+                  border: OutlineInputBorder(),
+                )),
+          ),
           Container(
               padding: EdgeInsets.only(top: 10),
               child: TextFormField(
-                controller: jrouteController,
-                decoration: InputDecoration(
-                    enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.yellow[700]),
-                        borderRadius: BorderRadius.circular(17)),
-                    labelText: "Jeepney Route",
-                    border: OutlineInputBorder()),
-              )),
-          Container(
-              padding: EdgeInsets.only(top: 10),
-              child: TextFormField(
-                controller: routepathController,
-                decoration: InputDecoration(
-                    enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.yellow[700]),
-                        borderRadius: BorderRadius.circular(17)),
-                    labelText: "Route Path(Ex. Gusa-Cugman-Lapasan...",
-                    border: OutlineInputBorder()),
-              )),
-          Container(
-              padding: EdgeInsets.only(top: 10),
-              child: TextFormField(
+                maxLength: 11,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 controller: mobnumController,
                 decoration: InputDecoration(
                     enabledBorder: OutlineInputBorder(
@@ -146,6 +236,8 @@ class _RegisterDriverState extends State<RegisterDriver> {
           Container(
               padding: EdgeInsets.only(top: 10),
               child: TextFormField(
+                maxLength: 2,
+                keyboardType: TextInputType.number,
                 controller: seatcapController,
                 decoration: InputDecoration(
                     enabledBorder: OutlineInputBorder(
@@ -180,15 +272,20 @@ class _RegisterDriverState extends State<RegisterDriver> {
                 final String routepath = routepathController.text.trim();
                 final String seatcap = seatcapController.text.trim();
                 if (email.isEmpty |
-                    platenum.isEmpty |
-                    fname.isEmpty |
-                    lname.isEmpty |
-                    jeepline.isEmpty |
-                    jeeproute.isEmpty |
+                        platenum.isEmpty |
+                        fname.isEmpty |
+                        lname.isEmpty ||
+
+                    //jeepline.isEmpty |
+
+                    //jeeproute.isEmpty |
                     mobnum.isEmpty |
-                    password.isEmpty |
-                    routepath.isEmpty |
-                    seatcap.isEmpty) {
+                        password.isEmpty |
+                        //routepath.isEmpty |
+                        seatcap.isEmpty ||
+                    selectedJeepLine == 'none' ||
+                    selectedRoute == 'none' ||
+                    selectedPath == 'none') {
                   showDialog(
                       context: context,
                       builder: (context) {
@@ -205,29 +302,56 @@ class _RegisterDriverState extends State<RegisterDriver> {
                         );
                       });
                 } else {
-                  context
-                      .read<Authenticate>()
-                      .signupDriver(email, password)
-                      .then((value) async {
-                    User user = FirebaseAuth.instance.currentUser;
-                    await FirebaseFirestore.instance
-                        .collection("users")
-                        .doc(user.uid)
-                        .set({
-                      'uid': user.uid,
-                      'user_type': userType,
-                      'email': email,
-                      'password': password,
-                      'first_name': fname,
-                      'last_name': lname,
-                      'jeepney_line': jeepline,
-                      'jeepney_route': jeeproute,
-                      'route_path': routepath,
-                      'seats_avail': seatcap,
-                      'mobile_number': mobnum,
-                      'vehicle_plate_number': platenum,
+                  try {
+                    context
+                        .read<Authenticate>()
+                        .signupDriver(email, password)
+                        .then((value) async {
+                      User user = FirebaseAuth.instance.currentUser;
+                      await FirebaseFirestore.instance
+                          .collection("users")
+                          .doc(user.uid)
+                          .set({
+                        'uid': user.uid,
+                        'user_type': userType,
+                        'email': email,
+                        'password': password,
+                        'first_name': fname,
+                        'last_name': lname,
+                        'jeepney_line': selectedJeepLine, //jeepline,
+                        'jeepney_route': selectedRoute, //jeeproute,
+                        'route_path': selectedPath, //routepath,
+                        'seats_avail': int.parse(seatcap),
+                        'mobile_number': int.parse(mobnum),
+                        'vehicle_plate_number': platenum,
+                        'vehicle_status': vehicle_status,
+                        'broadcast': broadcast,
+                        'current_occupied': current_occupied,
+                        'status': status,
+                      });
                     });
-                  });
+                  } catch (e) {
+                    return showDialog<void>(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            actionsOverflowDirection: VerticalDirection.down,
+                            title: Text(e.toString()),
+                            actions: <Widget>[
+                              ElevatedButton(
+                                  child: Text("CLOSE"),
+                                  onPressed: () {
+                                    /*context
+                                        .read<Authenticate>()
+                                        .login(email, password);*/
+                                    //Navigator.of(context).pop();
+                                  })
+                            ],
+                          );
+                        });
+                  }
+
                   return showDialog<void>(
                       context: context,
                       barrierDismissible: false,
@@ -238,6 +362,9 @@ class _RegisterDriverState extends State<RegisterDriver> {
                             ElevatedButton(
                                 child: Text("CLOSE"),
                                 onPressed: () {
+                                  /*context
+                                      .read<Authenticate>()
+                                      .login(email, password);*/
                                   Navigator.of(context).pop();
                                 })
                           ],

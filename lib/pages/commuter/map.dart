@@ -35,10 +35,15 @@ class _MapState extends State<Map> {
   var currentUserType;
   List driver = [];
   var driverLat;
+  var driver_heading;
+  var circle_accuracy;
+  var cameraLat;
+  var cameraLong;
   var driverLong;
   bool state = false;
   _MapState(this.routeData);
   StreamSubscription<QuerySnapshot> updateMarker;
+  StreamSubscription<QuerySnapshot> cameraChange;
   StreamSubscription _locationSubscription;
   locate.Location _locationTracker = locate.Location();
   GoogleMapController _controller;
@@ -65,32 +70,10 @@ class _MapState extends State<Map> {
     return byteData.buffer.asUint8List();
   }
 
-  /*updateMarkerAndCircle(locate.LocationData newLocalData, Uint8List imageData) {
-    LatLng driverLocation =
-        LatLng(routeData['latitude'], routeData['longitude']);
-    setState(() {
-      marker = Marker(
-          markerId: MarkerId("home"),
-          position: driverLocation,
-          rotation: newLocalData.heading,
-          draggable: false,
-          zIndex: 2,
-          flat: true,
-          anchor: Offset(0.5, 0.5),
-          icon: BitmapDescriptor.fromBytes(imageData));
-      circle = Circle(
-          circleId: CircleId("arrow"),
-          radius: newLocalData.accuracy,
-          zIndex: 1,
-          strokeColor: Colors.blue,
-          center: driverLocation,
-          fillColor: Colors.blue.withAlpha(70));
-    });
-  }*/
-
   //mao ni akong gichange mga part para live ang update niya sa map
   //kaning naa sa ibabaw na gicomment mao ni tong original na structure niya
-  updateMarkerAndCircle(locate.LocationData newLocalData, Uint8List imageData) {
+  updateMarkerAndCircle(
+      /*locate.LocationData newLocalData,*/ Uint8List imageData) {
     LatLng driverLocation;
     updateMarker = FirebaseFirestore.instance
         .collection('users')
@@ -101,20 +84,20 @@ class _MapState extends State<Map> {
       querySnapshot.docChanges.forEach((element) {
         if (element.type == DocumentChangeType.added ||
             element.type == DocumentChangeType.modified) {
-          //driver.add(element.doc.data());
           driverLat = element.doc.data()['latitude'];
           driverLong = element.doc.data()['longitude'];
+          driver_heading = element.doc.data()['driver_heading'];
+          circle_accuracy = element.doc.data()['circle_accuracy'];
         }
       });
     });
     //print('Driver Coordinates: $driverLat, $driverLong');
     return setState(() {
       driverLocation = LatLng(driverLat, driverLong);
-      //forpolylines.add(driverLocation);
       marker = Marker(
           markerId: MarkerId(routeData['vehicle_plate_number']),
           position: driverLocation,
-          rotation: newLocalData.heading,
+          rotation: driver_heading,
           draggable: false,
           zIndex: 2,
           flat: true,
@@ -122,7 +105,7 @@ class _MapState extends State<Map> {
           icon: BitmapDescriptor.fromBytes(imageData));
       circle = Circle(
           circleId: CircleId("arrow"),
-          radius: newLocalData.accuracy,
+          radius: circle_accuracy,
           zIndex: 1,
           strokeColor: Colors.blue,
           center: driverLocation,
@@ -155,8 +138,6 @@ class _MapState extends State<Map> {
   }
 
   void showrouteDirections(coords) async {
-    //from database ni na values geopoints ni sila instead na tagsa2 pag add sa database sa lat ug long
-    // ako silang giusa as geopoints tas access per index lang, mao unta ning pathing sa route sa lumbia na jeep
     LatLng routepoint1 =
         LatLng(coords['point1'].latitude, coords['point1'].longitude);
     LatLng routepoint2 =
@@ -181,31 +162,6 @@ class _MapState extends State<Map> {
     forpolylines.add(routepoint6);
     forpolylines.add(routepoint7);
     forpolylines.add(routepoint8);
-    //kani nga code ang gusto unta nako itry pero walay output gagawas basin tungod sa api
-    /*waypoints.add(
-        PolylineWayPoint(location: routepoint1.toString(), stopOver: true));
-    waypoints.add(
-        PolylineWayPoint(location: routepoint2.toString(), stopOver: true));
-    waypoints.add(
-        PolylineWayPoint(location: routepoint3.toString(), stopOver: true));
-    waypoints.add(
-        PolylineWayPoint(location: routepoint4.toString(), stopOver: true));
-    waypoints.add(
-        PolylineWayPoint(location: routepoint5.toString(), stopOver: true));
-    waypoints.add(
-        PolylineWayPoint(location: routepoint6.toString(), stopOver: true));
-    PolylineResult result = await polylinepoints.getRouteBetweenCoordinates(
-        apiKey,
-        PointLatLng(coords['point1'].latitude, coords['point1'].longitude),
-        PointLatLng(coords['point8'].latitude, coords['point8'].longitude),
-        travelMode: TravelMode.driving,
-        wayPoints: waypoints,
-        optimizeWaypoints: true);
-    if (result.points.isNotEmpty) {
-      result.points.forEach((PointLatLng point) {
-        forpolylines.add(LatLng(point.latitude, point.longitude));
-      });
-    }*/
     drivertrack = Polyline(
       polylineId: PolylineId(coords['route_path']),
       visible: true,
@@ -247,25 +203,40 @@ class _MapState extends State<Map> {
     }
   }
 
-  void getCurrentLocation() async {
+  getCurrentLocation() async {
     try {
       Uint8List imageData = await getMarker();
 
       if (_locationSubscription != null) {
         _locationSubscription.cancel();
         updateMarker.cancel();
+        cameraChange.cancel();
       }
+      cameraChange = FirebaseFirestore.instance
+          .collection('users')
+          .where('vehicle_plate_number',
+              isEqualTo: routeData['vehicle_plate_number'])
+          .snapshots()
+          .listen((querySnapshot) {
+        querySnapshot.docChanges.forEach((element) {
+          if (element.type == DocumentChangeType.added ||
+              element.type == DocumentChangeType.modified) {
+            cameraLat = element.doc.data()['latitude'];
+            cameraLong = element.doc.data()['longitude'];
+          }
+        });
+      });
 
-      _locationSubscription =
+      return _locationSubscription =
           _locationTracker.onLocationChanged.listen((newLocalData) {
         if (_controller != null) {
           _controller.animateCamera(CameraUpdate.newCameraPosition(
-              new CameraPosition(
+              CameraPosition(
                   bearing: 192.345345345,
-                  target: LatLng(newLocalData.latitude, newLocalData.longitude),
+                  target: LatLng(cameraLat, cameraLong),
                   tilt: 0,
-                  zoom: 18)));
-          updateMarkerAndCircle(newLocalData, imageData);
+                  zoom: 17)));
+          updateMarkerAndCircle(/*newLocalData,*/ imageData);
           usersMarkers.add(marker);
           //polylinestracker.add(drivertrack);
         }
@@ -313,7 +284,10 @@ class _MapState extends State<Map> {
     if (_locationSubscription != null) {
       _locationSubscription.cancel();
     }
-    updateMarker.cancel();
+    if (updateMarker != null) {
+      updateMarker.cancel();
+      cameraChange.cancel();
+    }
     //queueStatus.dispose();
     super.dispose();
   }

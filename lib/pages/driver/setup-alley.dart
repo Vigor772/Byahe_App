@@ -141,6 +141,8 @@ class _SetupAlleyState extends State<SetupAlley> {
       await FirebaseFirestore.instance.collection('users').doc(useruid).set({
         'latitude': currentLocation.latitude,
         'longitude': currentLocation.longitude,
+        'driver_heading': currentLocation.heading,
+        'circle_accuracy': currentLocation.accuracy,
       }, SetOptions(merge: true));
     });
   }
@@ -326,7 +328,9 @@ class _SetupAlleyState extends State<SetupAlley> {
 
   @override
   void dispose() {
-    _locationSubscription.cancel();
+    if (_locationSubscription != null) {
+      _locationSubscription.cancel();
+    }
     super.dispose();
   }
 

@@ -27,7 +27,7 @@ class _PendingState extends State<Pending> {
   var placeValue;
   int seatCap;
   Stream<QuerySnapshot> pendingpings;
-  int current_occupied;
+  var current_occupied;
   String useruid = FirebaseAuth.instance.currentUser.uid;
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
@@ -263,6 +263,8 @@ class _PendingState extends State<Pending> {
                                                     null)
                                                 ? Text(
                                                     commuter['place_in_words'],
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                     style: TextStyle(
                                                         fontWeight:
                                                             FontWeight.bold,
@@ -278,6 +280,8 @@ class _PendingState extends State<Pending> {
                                             child: (commuter['full_name'] !=
                                                     null)
                                                 ? Text(commuter['full_name'],
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                     style:
                                                         TextStyle(fontSize: 10))
                                                 : Text("Fetching Name...",
