@@ -23,9 +23,9 @@ class Authenticate {
   Future<String> signupCommuter(String email, String password) async {
     String userType;
     String name;
-    bool queue = false;
-    String status = "ONLINE";
-    bool state = false;
+    //bool queue = false;
+    String status;
+    //bool state = false;
 
     try {
       await _auth
@@ -37,17 +37,16 @@ class Authenticate {
           "uid": user.uid,
           'full_name': name,
           "user_type": userType,
-          'queue': queue,
-          'status': 'ONLINE',
+          //'queue': queue,
+          'status': status,
           //'state': state,
           "email": email,
           "password": password,
         });
       });
       return "Successfully Signed In";
-    } catch (error) {
-      print(error.toString());
-      return null;
+    } on FirebaseAuthException catch (error) {
+      return error.toString();
     }
   }
 
@@ -73,10 +72,12 @@ class Authenticate {
     var number;
     var numpass;
     var date;
+    var uid;
     await FirebaseFirestore.instance
         .collection('bookings')
-        .doc(fnamePlate)
+        .doc(/*fnamePlate*/)
         .set({
+          'applicant_reference': uid,
           'status': status,
           'plate_reference': vehicle_plate,
           'driver_name': drivername,
@@ -132,7 +133,7 @@ class Authenticate {
         });
       });
       return "Successfully Signed In";
-    } catch (error) {
+    } on FirebaseAuthException catch (error) {
       print(error.toString());
       return null;
     }
@@ -486,16 +487,17 @@ class Authenticate {
             print('Failed to clear Commuter Current LandMark: $onError'));
   }
 
+  //changed from .update to .set
   Future<void> updatePing(var driveruid) {
     var ping_status = "Pending";
     String useruid = FirebaseAuth.instance.currentUser.uid;
     return FirebaseFirestore.instance
         .collection('users')
         .doc(useruid)
-        .update({
+        .set({
           'ping_status': ping_status,
           'pinged_driver': driveruid,
-        })
+        }, SetOptions(merge: true))
         .then((value) => print('Update Ping Status: Pending'))
         .catchError(
             (onError) => print('Failed to Update Ping Status into Pending'));

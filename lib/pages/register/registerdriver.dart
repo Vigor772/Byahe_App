@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:byahe_app/pages/commuter/locationselection.dart';
 import 'package:byahe_app/pages/register/registerdriverconfirmation.dart';
 import 'package:byahe_app/widgets/closebutton.dart';
 import 'package:byahe_app/pages/login_auth.dart';
@@ -330,8 +331,33 @@ class _RegisterDriverState extends State<RegisterDriver> {
                         'status': status,
                       });
                     });
-                  } catch (e) {
                     return showDialog<void>(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Successfully Signed Up'),
+                            actions: <Widget>[
+                              ElevatedButton(
+                                  child: Text("CLOSE"),
+                                  onPressed: () {
+                                    /*context
+                                      .read<Authenticate>()
+                                      .login(email, password);*/
+                                    Navigator.pushAndRemoveUntil(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                LocationSelection()),
+                                        (ModalRoute.withName('/')));
+                                    Navigator.pop(context);
+                                    //Navigator.of(context).pop();
+                                  })
+                            ],
+                          );
+                        });
+                  } catch (e) {
+                    return showDialog(
                         context: context,
                         barrierDismissible: false,
                         builder: (BuildContext context) {
@@ -345,14 +371,14 @@ class _RegisterDriverState extends State<RegisterDriver> {
                                     /*context
                                         .read<Authenticate>()
                                         .login(email, password);*/
-                                    //Navigator.of(context).pop();
+                                    Navigator.of(context).pop();
                                   })
                             ],
                           );
                         });
                   }
 
-                  return showDialog<void>(
+                  /*return showDialog<void>(
                       context: context,
                       barrierDismissible: false,
                       builder: (BuildContext context) {
@@ -365,11 +391,18 @@ class _RegisterDriverState extends State<RegisterDriver> {
                                   /*context
                                       .read<Authenticate>()
                                       .login(email, password);*/
-                                  Navigator.of(context).pop();
+                                  Navigator.pushAndRemoveUntil(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              LocationSelection()),
+                                      (ModalRoute.withName('/')));
+                                  Navigator.pop(context);
+                                  //Navigator.of(context).pop();
                                 })
                           ],
                         );
-                      });
+                      });*/
                 }
               },
               /*Navigator.push(

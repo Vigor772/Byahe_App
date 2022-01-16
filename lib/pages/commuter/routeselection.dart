@@ -165,20 +165,25 @@ class _RouteSelectionState extends State<RouteSelection> {
                                     routeListDetails[index]['jeepney_route'],
                                     style: TextStyle(color: Colors.white)),
                                 subtitle: Text(
-                                    routeListDetails[index]['last_name'],
+                                    'Operator: ${routeListDetails[index]['last_name']}',
                                     style: TextStyle(color: Colors.white)),
-                                leading: Icon(Icons.place, color: Colors.white),
+                                leading: Icon(Icons.directions_car,
+                                    color: Colors.white),
                                 trailing: (routeListDetails[index]['status'] ==
                                             "ONLINE" &&
                                         routeListDetails[index]['broadcast'] ==
                                             true)
-                                    ? FutureBuilder(
-                                        future: FirebaseFirestore.instance
-                                            .collection('users')
-                                            .doc(routeListDetails[index]['uid'])
-                                            .get(),
+                                    ? StreamBuilder(
+                                        stream: seatsAllocated =
+                                            FirebaseFirestore.instance
+                                                .collection('users')
+                                                .where('uid',
+                                                    isEqualTo:
+                                                        routeListDetails[index]
+                                                            ['uid'])
+                                                .snapshots(),
                                         builder: (context,
-                                            AsyncSnapshot<DocumentSnapshot>
+                                            AsyncSnapshot<QuerySnapshot>
                                                 snapshot) {
                                           if (snapshot.hasError) {
                                             return Text(
@@ -189,14 +194,35 @@ class _RouteSelectionState extends State<RouteSelection> {
                                           if (snapshot.hasData == false) {
                                             return CircularProgressIndicator();
                                           }
-                                          return Text(
-                                              snapshot.data['current_occupied']
-                                                      .toString() +
-                                                  "/" +
-                                                  snapshot.data['seats_avail']
-                                                      .toString(),
-                                              style: TextStyle(
-                                                  color: Colors.white));
+                                          return Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: snapshot.data.docs
+                                                  .map(
+                                                    (values) => Column(
+                                                      children: [
+                                                        Text(
+                                                            values['current_occupied']
+                                                                    .toString() +
+                                                                '/' +
+                                                                values['seats_avail']
+                                                                    .toString(),
+                                                            style: TextStyle(
+                                                                fontSize: 11.5,
+                                                                color: Colors
+                                                                    .white)),
+                                                        Text(
+                                                            values[
+                                                                'vehicle_status'],
+                                                            style: TextStyle(
+                                                                fontSize: 10.5,
+                                                                color: Colors
+                                                                    .white))
+                                                      ],
+                                                    ),
+                                                  )
+                                                  .toList());
                                         })
                                     : Text(routeListDetails[index]['status'],
                                         style: TextStyle(color: Colors.white)),

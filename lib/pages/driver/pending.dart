@@ -263,6 +263,7 @@ class _PendingState extends State<Pending> {
                                                     null)
                                                 ? Text(
                                                     commuter['place_in_words'],
+                                                    maxLines: 2,
                                                     overflow:
                                                         TextOverflow.ellipsis,
                                                     style: TextStyle(
@@ -280,6 +281,7 @@ class _PendingState extends State<Pending> {
                                             child: (commuter['full_name'] !=
                                                     null)
                                                 ? Text(commuter['full_name'],
+                                                    maxLines: 2,
                                                     overflow:
                                                         TextOverflow.ellipsis,
                                                     style:

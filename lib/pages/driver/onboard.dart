@@ -240,27 +240,31 @@ class _OnboardState extends State<Onboard> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: <Widget>[
-                                    Row(children: <Widget>[
-                                      Container(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 10),
-                                          child: Icon(
-                                              Icons.account_circle_outlined)),
-                                      Container(
-                                        child: (commuter['full_name'] != null)
-                                            ? Text(
-                                                'Commuter: ' +
-                                                    commuter['full_name'],
-                                                style: TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              )
-                                            : Text('Fetching Name...',
-                                                style: TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                      )
-                                    ]),
+                                    Expanded(
+                                      child: Row(children: <Widget>[
+                                        Container(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 10),
+                                            child: Icon(
+                                                Icons.account_circle_outlined)),
+                                        Container(
+                                          width: 215,
+                                          child: (commuter['full_name'] != null)
+                                              ? Text(
+                                                  'Commuter: ' +
+                                                      commuter['full_name'],
+                                                  maxLines: 2,
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                )
+                                              : Text('Fetching Name...',
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                        )
+                                      ]),
+                                    ),
                                     InkWell(
                                       onTap: () {
                                         context
@@ -278,6 +282,7 @@ class _OnboardState extends State<Onboard> {
                                             horizontal: 10),
                                         child: Image.asset(
                                           'assets/remove.png',
+                                          fit: BoxFit.contain,
                                           width: 50,
                                         ),
                                       ),

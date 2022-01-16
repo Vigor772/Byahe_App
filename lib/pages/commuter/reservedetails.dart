@@ -17,6 +17,7 @@ class ReserveDetails extends StatefulWidget {
 class _ReserveDetailsState extends State<ReserveDetails> {
   var bookingDetails = [];
   Stream<QuerySnapshot> bookings;
+  String useruid = FirebaseAuth.instance.currentUser.uid;
   var name;
   var fnamePlate;
   bool isButtonDisabled = false;
@@ -103,7 +104,8 @@ class _ReserveDetailsState extends State<ReserveDetails> {
               child: StreamBuilder(
                   stream: bookings = FirebaseFirestore.instance
                       .collection('bookings')
-                      .where('customer_name', isEqualTo: name)
+                      .where('applicant_reference', isEqualTo: useruid)
+                      //.where('customer_name', isEqualTo: name)
                       .snapshots(),
                   builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                     if (snapshot.hasError) {
@@ -152,14 +154,20 @@ class _ReserveDetailsState extends State<ReserveDetails> {
                                                       fontSize: 12),
                                                 ),
                                                 (info['status'] != "Cancelled")
-                                                    ? Text(info['status'],
+                                                    ? Text(
+                                                        info['status'] != null
+                                                            ? info['status']
+                                                            : 'Loading...',
                                                         style: TextStyle(
                                                             fontWeight:
                                                                 FontWeight.bold,
                                                             fontSize: 12,
                                                             color:
                                                                 Colors.yellow))
-                                                    : Text(info['status'],
+                                                    : Text(
+                                                        info['status'] != null
+                                                            ? info['status']
+                                                            : 'Loading...',
                                                         style: TextStyle(
                                                             fontWeight:
                                                                 FontWeight.bold,
@@ -176,7 +184,10 @@ class _ReserveDetailsState extends State<ReserveDetails> {
                                                           FontWeight.bold,
                                                       fontSize: 12),
                                                 ),
-                                                Text(info['driver_name'],
+                                                Text(
+                                                    info['driver_name'] != null
+                                                        ? info['driver_name']
+                                                        : '...',
                                                     style: TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
@@ -193,7 +204,12 @@ class _ReserveDetailsState extends State<ReserveDetails> {
                                                           FontWeight.bold,
                                                       fontSize: 12),
                                                 ),
-                                                Text(info['plate_reference'],
+                                                Text(
+                                                    info['plate_reference'] !=
+                                                            null
+                                                        ? info[
+                                                            'plate_reference']
+                                                        : '...',
                                                     style: TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
@@ -210,7 +226,11 @@ class _ReserveDetailsState extends State<ReserveDetails> {
                                                           FontWeight.bold,
                                                       fontSize: 12),
                                                 ),
-                                                Text(info['customer_name'],
+                                                Text(
+                                                    info['customer_name'] !=
+                                                            null
+                                                        ? info['customer_name']
+                                                        : '...',
                                                     style: TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
@@ -227,7 +247,10 @@ class _ReserveDetailsState extends State<ReserveDetails> {
                                                           FontWeight.bold,
                                                       fontSize: 12),
                                                 ),
-                                                Text(info['gender'],
+                                                Text(
+                                                    info['gender'] != null
+                                                        ? info['gender']
+                                                        : '...',
                                                     style: TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
@@ -245,8 +268,12 @@ class _ReserveDetailsState extends State<ReserveDetails> {
                                                       fontSize: 12),
                                                 ),
                                                 Text(
-                                                    info[
-                                                        'number_of_passengers'],
+                                                    info['number_of_passengers']
+                                                                .toString() !=
+                                                            null
+                                                        ? info['number_of_passengers']
+                                                            .toString()
+                                                        : '...',
                                                     style: TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
@@ -263,7 +290,13 @@ class _ReserveDetailsState extends State<ReserveDetails> {
                                                           FontWeight.bold,
                                                       fontSize: 12),
                                                 ),
-                                                Text(info['contact_number'],
+                                                Text(
+                                                    info['contact_number']
+                                                                .toString() !=
+                                                            null
+                                                        ? info['contact_number']
+                                                            .toString()
+                                                        : '...',
                                                     style: TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
@@ -280,7 +313,30 @@ class _ReserveDetailsState extends State<ReserveDetails> {
                                                           FontWeight.bold,
                                                       fontSize: 12),
                                                 ),
-                                                Text(info['address'],
+                                                Text(
+                                                    info['address'] != null
+                                                        ? info['address']
+                                                        : '...',
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12,
+                                                    )),
+                                              ],
+                                            ),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  "Booking Purpose: ",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12),
+                                                ),
+                                                Text(
+                                                    info['purpose'] != null
+                                                        ? info['purpose']
+                                                        : '...',
                                                     style: TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
@@ -297,7 +353,12 @@ class _ReserveDetailsState extends State<ReserveDetails> {
                                                           FontWeight.bold,
                                                       fontSize: 12),
                                                 ),
-                                                Text(info['date_to_reserve'],
+                                                Text(
+                                                    info['date_to_reserve'] !=
+                                                            null
+                                                        ? info[
+                                                            'date_to_reserve']
+                                                        : '...',
                                                     style: TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,

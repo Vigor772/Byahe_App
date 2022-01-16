@@ -178,7 +178,9 @@ class _ReserveState extends State<Reserve> {
                                                   Text('Contact Number: ',
                                                       style: TextStyle(
                                                           fontSize: 16)),
-                                                  Text(info['contact_number'],
+                                                  Text(
+                                                      info['contact_number']
+                                                          .toString(),
                                                       style: TextStyle(
                                                           fontWeight:
                                                               FontWeight.bold,
@@ -187,8 +189,18 @@ class _ReserveState extends State<Reserve> {
                                                       style: TextStyle(
                                                           fontSize: 16)),
                                                   Text(
-                                                      info[
-                                                          'number_of_passengers'],
+                                                      info['number_of_passengers']
+                                                          .toString(),
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 16)),
+                                                  Text('Booking Purpose: ',
+                                                      style: TextStyle(
+                                                          fontSize: 16)),
+                                                  Text(
+                                                      info['purpose']
+                                                          .toString(),
                                                       style: TextStyle(
                                                           fontWeight:
                                                               FontWeight.bold,
@@ -253,11 +265,13 @@ class _ReserveState extends State<Reserve> {
                                                         child: Icon(Icons
                                                             .account_circle_rounded)),
                                                     Container(
+                                                      width: 170,
                                                       child: Text(
                                                         info['customer_name'] +
                                                             ' ' +
                                                             info[
                                                                 'date_to_reserve'],
+                                                        maxLines: 2,
                                                         style: TextStyle(
                                                             fontWeight:
                                                                 FontWeight.bold,
@@ -285,9 +299,9 @@ class _ReserveState extends State<Reserve> {
                                                                               fnamePlate,
                                                                               response);
                                                                       /*setState(() {
-                                                                  accepted = true;
-                                                                  rejected = false;
-                                                                });*/
+                                                              accepted = true;
+                                                              rejected = false;
+                                                            });*/
                                                                     },
                                                                     child: (info['status'] !=
                                                                             "Accepted")
@@ -323,9 +337,9 @@ class _ReserveState extends State<Reserve> {
                                                                               fnamePlate,
                                                                               response);
                                                                       /*setState(() {
-                                                                  rejected = true;
-                                                                  accepted = false;
-                                                                });*/
+                                                              rejected = true;
+                                                              accepted = false;
+                                                            });*/
                                                                     },
                                                                     child: (info['status'] !=
                                                                             'Rejected')
@@ -378,7 +392,7 @@ class _ReserveState extends State<Reserve> {
                                                 vertical: 10, horizontal: 10),
                                             child: Center(
                                                 /*child: Text('No Bookings Received',
-                                            style: TextStyle(color: Colors.grey)),*/
+                                        style: TextStyle(color: Colors.grey)),*/
                                                 ))))
                             .toList());
                   }))

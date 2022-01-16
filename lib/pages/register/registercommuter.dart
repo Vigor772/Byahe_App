@@ -1,3 +1,4 @@
+import 'package:byahe_app/pages/commuter/locationselection.dart';
 import 'package:byahe_app/pages/register/registercommuternickname.dart';
 import 'package:flutter/material.dart';
 import 'package:byahe_app/widgets/closebutton.dart';
@@ -17,6 +18,7 @@ class _RegisterCommuterState extends State<RegisterCommuter> {
   TextEditingController passwordController = new TextEditingController();
   TextEditingController nameController = new TextEditingController();
   final String userType = "Commuter";
+  String status = 'ONLINE';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -111,6 +113,7 @@ class _RegisterCommuterState extends State<RegisterCommuter> {
                       "user_type": userType,
                       "email": email,
                       "password": password,
+                      'status': status,
                     });
                   });
                   return showDialog<void>(
@@ -119,11 +122,17 @@ class _RegisterCommuterState extends State<RegisterCommuter> {
                       builder: (BuildContext context) {
                         return AlertDialog(
                           title: Text('Successfully Signed Up'),
-                          content: Text('Back to Login'),
+                          content: Text('Redirecting to Home Page'),
                           actions: <Widget>[
                             ElevatedButton(
                                 child: Text("CLOSE"),
                                 onPressed: () {
+                                  Navigator.pushAndRemoveUntil(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              LocationSelection()),
+                                      (ModalRoute.withName('/')));
                                   Navigator.pop(context);
                                 })
                           ],
@@ -147,8 +156,8 @@ class _RegisterCommuterState extends State<RegisterCommuter> {
                       onPressed: () {
                         // Navigator.pushNamed(
                         //     context, '/registercommuternickname');
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => RegisterCommuterNickname()));
+                        //Navigator.of(context).push(MaterialPageRoute(
+                        //  builder: (context) => RegisterCommuterNickname()));
                       },
                       style: ElevatedButton.styleFrom(
                           primary: Colors.white,
@@ -185,8 +194,8 @@ class _RegisterCommuterState extends State<RegisterCommuter> {
                       onPressed: () {
                         // Navigator.pushNamed(
                         //     context, '/registercommuternickname');
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => RegisterCommuterNickname()));
+                        //Navigator.of(context).push(MaterialPageRoute(
+                        //    builder: (context) => RegisterCommuterNickname()));
                       },
                       style: ElevatedButton.styleFrom(
                           primary: Colors.white,

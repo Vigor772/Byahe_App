@@ -28,7 +28,39 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
   TextEditingController numberController = TextEditingController();
   TextEditingController numpassController = TextEditingController();
   TextEditingController dateCtlController = TextEditingController();
+  String useruid = FirebaseAuth.instance.currentUser.uid;
+  var commuterName;
   DateTime selectedDate = DateTime.now();
+  List category = [
+    {'purpose': 'Special Occasions'},
+    {'purpose': 'Strike'}
+  ];
+  List genders = [
+    {'gender': 'Male'},
+    {'gender': 'Female'}
+  ];
+  var selectedPurpose = 'none';
+  var selectedGender = 'none';
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCommuterName();
+  }
+
+  fetchCommuterName() async {
+    dynamic result = await context.read<Authenticate>().retrieveName();
+    if (result == null) {
+      print('Unable to retrieve commuter name (reservedetails.dart');
+    } else {
+      if (mounted) {
+        setState(() {
+          commuterName = result;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -108,9 +140,18 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
                   Container(
                     child: Row(children: <Widget>[
                       Text("Contact Number : "),
-                      Text(routeData['mobile_number'])
+                      Text(routeData['mobile_number'].toString())
                     ]),
                   ),
+                  Container(
+                    child: Row(
+                      children: [
+                        Text('Note: ',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text("Not for individual reservation but a group"),
+                      ],
+                    ),
+                  )
                 ])),
             Container(
                 decoration: BoxDecoration(
@@ -121,7 +162,11 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
                     Container(
                         padding: EdgeInsets.symmetric(vertical: 10),
                         child: TextFormField(
-                          controller: fnameController,
+                          textCapitalization: TextCapitalization.words,
+                          //initialValue: commuterName,
+                          enabled: false,
+                          controller: fnameController =
+                              new TextEditingController(text: commuterName),
                           decoration: InputDecoration(
                               enabledBorder: OutlineInputBorder(
                                   borderSide:
@@ -130,30 +175,49 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
                               border: OutlineInputBorder()),
                         )),
                     Container(
-                        padding: EdgeInsets.symmetric(vertical: 10),
-                        child: TextFormField(
-                          controller: genderController,
+                      padding: EdgeInsets.only(top: 10),
+                      child: DropdownButtonFormField(
+                          isExpanded: true,
+                          items: genders
+                              .map((chosen) => new DropdownMenuItem<String>(
+                                  value: chosen['gender'],
+                                  child: Text(
+                                    chosen['gender'],
+                                    overflow: TextOverflow.ellipsis,
+                                  )))
+                              .toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedGender = value;
+                            });
+                          },
                           decoration: InputDecoration(
-                              enabledBorder: OutlineInputBorder(
-                                  borderSide:
-                                      BorderSide(color: Colors.yellow[700])),
-                              labelText: "Gender",
-                              border: OutlineInputBorder()),
-                        )),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.yellow[700]),
+                            ),
+                            //borderRadius: BorderRadius.circular(17)),
+                            labelText: "Gender",
+                            border: OutlineInputBorder(),
+                          )),
+                    ),
                     Container(
                         padding: EdgeInsets.symmetric(vertical: 10),
                         child: TextFormField(
+                          textCapitalization: TextCapitalization.words,
                           controller: addressController,
                           decoration: InputDecoration(
                               enabledBorder: OutlineInputBorder(
                                   borderSide:
                                       BorderSide(color: Colors.yellow[700])),
-                              labelText: "Address",
+                              labelText: "Pick-up Address",
                               border: OutlineInputBorder()),
                         )),
                     Container(
                         padding: EdgeInsets.symmetric(vertical: 10),
                         child: TextFormField(
+                          //validator: ,
+                          maxLength: 11,
+                          keyboardType: TextInputType.number,
                           controller: numberController,
                           decoration: InputDecoration(
                               enabledBorder: OutlineInputBorder(
@@ -165,6 +229,8 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
                     Container(
                         padding: EdgeInsets.symmetric(vertical: 10),
                         child: TextFormField(
+                          keyboardType: TextInputType.number,
+                          maxLength: 2,
                           controller: numpassController,
                           decoration: InputDecoration(
                               enabledBorder: OutlineInputBorder(
@@ -173,6 +239,32 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
                               labelText: "Number of Passengers",
                               border: OutlineInputBorder()),
                         )),
+                    Container(
+                      padding: EdgeInsets.only(top: 10),
+                      child: DropdownButtonFormField(
+                          isExpanded: true,
+                          items: category
+                              .map((choice) => new DropdownMenuItem<String>(
+                                  value: choice['purpose'],
+                                  child: Text(
+                                    choice['purpose'],
+                                    overflow: TextOverflow.ellipsis,
+                                  )))
+                              .toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedPurpose = value;
+                            });
+                          },
+                          decoration: InputDecoration(
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.yellow[700]),
+                            ),
+                            //borderRadius: BorderRadius.circular(17)),
+                            labelText: "Purpose",
+                            border: OutlineInputBorder(),
+                          )),
+                    ),
                     Container(
                         padding: EdgeInsets.symmetric(vertical: 10),
                         child: TextFormField(
@@ -214,17 +306,17 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
                       primary: Colors.yellow[700], minimumSize: Size(200, 50)),
                   onPressed: () {
                     var fname = fnameController.text.trim();
-                    var gender = genderController.text.trim();
+                    //var gender = genderController.text.trim();
                     var address = addressController.text.trim();
                     var number = numberController.text.trim();
                     var numpass = numpassController.text.trim();
                     var date = dateCtlController.text.trim();
 
-                    if (fname.isEmpty |
-                        gender.isEmpty |
-                        address.isEmpty |
-                        number.isEmpty |
-                        numpass.isEmpty |
+                    if (fname.isEmpty ||
+                        selectedGender == 'none' ||
+                        //gender.isEmpty |
+                        address.isEmpty | number.isEmpty | numpass.isEmpty ||
+                        selectedPurpose == 'none' ||
                         date.isEmpty) {
                       showDialog(
                           context: context,
@@ -241,61 +333,88 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
                               ],
                             );
                           });
-                    } else if (!(fname.isEmpty |
+                    } else /*if (!(fname.isEmpty |
                         gender.isEmpty |
                         address.isEmpty |
                         number.isEmpty |
                         numpass.isEmpty |
-                        date.isEmpty)) {
-                      var vehicle_plate;
-                      var drivername;
-                      var fnamePlate;
-                      drivername = routeData['last_name'];
-                      vehicle_plate = routeData['vehicle_plate_number'];
-                      fnamePlate = fname + vehicle_plate;
-                      var status = 'Pending';
-                      context
-                          .read<Authenticate>()
-                          .bookings()
-                          .then((value) async {
-                        User user = FirebaseAuth.instance.currentUser;
-                        await FirebaseFirestore.instance
-                            .collection('bookings')
-                            .doc(fnamePlate)
-                            .set({
-                          'status': status,
-                          'plate_reference': vehicle_plate,
-                          'driver_name': drivername,
-                          "customer_name": fname,
-                          'gender': gender,
-                          'address': address,
-                          'contact_number': number,
-                          'number_of_passengers': numpass,
-                          'date_to_reserve': date,
-                        });
-                      });
-                      fnameController.clear();
-                      genderController.clear();
-                      numberController.clear();
-                      numpassController.clear();
-                      dateCtlController.clear();
-                      addressController.clear();
-                      return showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: Text("Booking Request Submitted"),
-                              content: Text("Wait for the driver's response"),
-                              actions: <Widget>[
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text('CLOSE'),
-                                )
-                              ],
-                            );
+                        date.isEmpty)) */
+                    {
+                      try {
+                        var vehicle_plate;
+                        var drivername;
+                        var fnamePlate;
+                        drivername = routeData['last_name'];
+                        vehicle_plate = routeData['vehicle_plate_number'];
+                        fnamePlate = (fname + vehicle_plate).trim();
+                        var status = 'Pending';
+                        context
+                            .read<Authenticate>()
+                            .bookings()
+                            .then((value) async {
+                          User user = FirebaseAuth.instance.currentUser;
+                          await FirebaseFirestore.instance
+                              .collection('bookings')
+                              .doc(fnamePlate)
+                              .set({
+                            'applicant_reference': useruid,
+                            'status': status,
+                            'plate_reference': vehicle_plate,
+                            'driver_name': drivername,
+                            "customer_name": fname,
+                            'gender': selectedGender,
+                            'address': address,
+                            'contact_number': int.parse(number),
+                            'number_of_passengers': int.parse(numpass),
+                            'purpose': selectedPurpose,
+                            'date_to_reserve': date,
                           });
+                        });
+                        fnameController.clear();
+                        genderController.clear();
+                        numberController.clear();
+                        numpassController.clear();
+                        dateCtlController.clear();
+                        addressController.clear();
+                        return showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: Text("Booking Request Submitted"),
+                                content: Text("Wait for the driver's response"),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text('CLOSE'),
+                                  )
+                                ],
+                              );
+                            });
+                      } catch (e) {
+                        return showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                actionsOverflowDirection:
+                                    VerticalDirection.down,
+                                title: Text(e.toString()),
+                                actions: <Widget>[
+                                  ElevatedButton(
+                                      child: Text("CLOSE"),
+                                      onPressed: () {
+                                        /*context
+                                        .read<Authenticate>()
+                                        .login(email, password);*/
+                                        Navigator.of(context).pop();
+                                      })
+                                ],
+                              );
+                            });
+                      }
                     }
                   },
                   child: Text("CONFIRM")),

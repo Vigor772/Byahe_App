@@ -74,7 +74,8 @@ class _DrawerListState extends State<DrawerList> {
                       String status = "OFFLINE";
                       //Navigator.pop(context);
                       context.read<Authenticate>().updateUserStatus("OFFLINE");
-                      Navigator.of(context).pushReplacementNamed('/');
+                      Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (context) => LoginPage()));
                       FirebaseAuth.instance.signOut();
                       /*Navigator.of(context).push(
                           MaterialPageRoute(builder: (context) => LoginPage()));*/
@@ -122,7 +123,8 @@ class _DrawerListState extends State<DrawerList> {
                       } else {
                         String status = "OFFLINE";
                         context.read<Authenticate>().updateUserStatus(status);
-                        Navigator.of(context).pushReplacementNamed('/');
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(
+                            builder: (context) => LoginPage()));
                         FirebaseAuth.instance.signOut();
                       }
                     },
