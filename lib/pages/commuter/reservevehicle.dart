@@ -312,6 +312,25 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
                     var numpass = numpassController.text.trim();
                     var date = dateCtlController.text.trim();
 
+                    if (int.parse(numpass) < 3) {
+                      showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: Text(
+                                  "This is not intended for individual booking!"),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text('CLOSE'),
+                                )
+                              ],
+                            );
+                          });
+                    }
+
                     if (fname.isEmpty ||
                         selectedGender == 'none' ||
                         //gender.isEmpty |
