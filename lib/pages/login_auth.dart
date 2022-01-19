@@ -481,6 +481,7 @@ class Authenticate {
           'ping_status': ping_status,
           'pinged_driver': null,
           'place_in_words': null,
+          'ping_time': null,
         })
         .then((value) => print('Updated Ping Status: Cancelled'))
         .catchError((onError) =>
@@ -488,7 +489,7 @@ class Authenticate {
   }
 
   //changed from .update to .set
-  Future<void> updatePing(var driveruid) {
+  Future<void> updatePing(var driveruid, time) {
     var ping_status = "Pending";
     String useruid = FirebaseAuth.instance.currentUser.uid;
     return FirebaseFirestore.instance
@@ -497,6 +498,7 @@ class Authenticate {
         .set({
           'ping_status': ping_status,
           'pinged_driver': driveruid,
+          'ping_time': time,
         }, SetOptions(merge: true))
         .then((value) => print('Update Ping Status: Pending'))
         .catchError(

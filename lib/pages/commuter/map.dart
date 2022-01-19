@@ -13,6 +13,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart' as locate;
 import 'package:provider/src/provider.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:intl/intl.dart';
 // ignore: implementation_imports
 
 // ignore: must_be_immutable
@@ -40,6 +41,9 @@ class _MapState extends State<Map> {
   var cameraLat;
   var cameraLong;
   var driverLong;
+  //DateTime date = Timestamp.now().toDate();
+  String formattedDate =
+      DateFormat('yyyy-MM-dd – kk:mm').format(DateTime.now());
   bool state = false;
   _MapState(this.routeData);
   StreamSubscription<QuerySnapshot> updateMarker;
@@ -651,7 +655,8 @@ class _MapState extends State<Map> {
                                                       context
                                                           .read<Authenticate>()
                                                           .updatePing(
-                                                              routeData['uid']);
+                                                              routeData['uid'],
+                                                              formattedDate);
                                                       MyApp.ping = true;
                                                     });
                                                   }

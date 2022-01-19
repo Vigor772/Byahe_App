@@ -258,6 +258,7 @@ class _PendingState extends State<Pending> {
                                       Column(
                                         children: [
                                           Container(
+                                            width: 150,
                                             child: (commuter[
                                                         'place_in_words'] !=
                                                     null)
@@ -278,9 +279,17 @@ class _PendingState extends State<Pending> {
                                                         fontSize: 12)),
                                           ),
                                           Container(
+                                            width: 150,
                                             child: (commuter['full_name'] !=
-                                                    null)
-                                                ? Text(commuter['full_name'],
+                                                        null &&
+                                                    commuter['ping_time'] !=
+                                                        null)
+                                                ? Text(
+                                                    commuter['full_name'] +
+                                                        '(' +
+                                                        commuter['ping_time']
+                                                            .toString() +
+                                                        ')',
                                                     maxLines: 2,
                                                     overflow:
                                                         TextOverflow.ellipsis,
