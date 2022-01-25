@@ -763,15 +763,17 @@ class _MapState extends State<Map> {
 
   getCoordinates() async {
     Uint8List imageData2 = await getMarker2();
-    setState(() {
-      usersMarkers.add(Marker(
-          markerId: MarkerId(email),
-          position: LatLng(latitude, longitude),
-          infoWindow: InfoWindow(
-            title: '$email pinged',
-          ),
-          icon: BitmapDescriptor.fromBytes(imageData2)));
-    });
+    if (latitude != null && longitude != null) {
+      setState(() {
+        usersMarkers.add(Marker(
+            markerId: MarkerId(email),
+            position: LatLng(latitude, longitude),
+            infoWindow: InfoWindow(
+              title: '$email pinged',
+            ),
+            icon: BitmapDescriptor.fromBytes(imageData2)));
+      });
+    }
   }
 
   cancelPing() {

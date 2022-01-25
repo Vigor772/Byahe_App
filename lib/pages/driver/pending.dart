@@ -214,6 +214,7 @@ class _PendingState extends State<Pending> {
                       .where('pinged_driver', isEqualTo: useruid)
                       .where('user_type', isEqualTo: "Commuter")
                       .where('ping_status', isEqualTo: "Pending")
+                      .orderBy('ping_time', descending: false)
                       .snapshots(),
                   builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                     if (snapshot.hasError) {
