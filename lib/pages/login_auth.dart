@@ -73,10 +73,12 @@ class Authenticate {
     var numpass;
     var date;
     var uid;
+    var date_applied;
     await FirebaseFirestore.instance
         .collection('bookings')
         .doc(/*fnamePlate*/)
         .set({
+          'date_applied': date_applied,
           'applicant_reference': uid,
           'status': status,
           'plate_reference': vehicle_plate,

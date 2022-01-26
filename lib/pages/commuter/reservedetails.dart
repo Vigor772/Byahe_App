@@ -6,7 +6,7 @@ import 'package:provider/src/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:byahe_app/pages/login_auth.dart';
-
+import 'package:intl/intl.dart';
 import '../login_auth.dart';
 
 class ReserveDetails extends StatefulWidget {
@@ -105,6 +105,7 @@ class _ReserveDetailsState extends State<ReserveDetails> {
                   stream: bookings = FirebaseFirestore.instance
                       .collection('bookings')
                       .where('applicant_reference', isEqualTo: useruid)
+                      .orderBy('date_applied', descending: false)
                       //.where('customer_name', isEqualTo: name)
                       .snapshots(),
                   builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -173,6 +174,31 @@ class _ReserveDetailsState extends State<ReserveDetails> {
                                                                 FontWeight.bold,
                                                             fontSize: 12,
                                                             color: Colors.red)),
+                                              ],
+                                            ),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  "Date Booked: ",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12),
+                                                ),
+                                                Text(
+                                                    info['date_applied'] != null
+                                                        ? DateFormat(
+                                                                'yyyy-MM-dd – kk:mm')
+                                                            .format(info[
+                                                                    'date_applied']
+                                                                .toDate())
+                                                            .toString()
+                                                        : '...',
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12,
+                                                    )),
                                               ],
                                             ),
                                             Row(

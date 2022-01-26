@@ -12,6 +12,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:provider/src/provider.dart';
 import 'package:flutter/painting.dart';
+import 'package:intl/intl.dart';
 
 class Pending extends StatefulWidget {
   // const Pending({ Key? key }) : super(key: key);
@@ -288,7 +289,11 @@ class _PendingState extends State<Pending> {
                                                 ? Text(
                                                     commuter['full_name'] +
                                                         '(' +
-                                                        commuter['ping_time']
+                                                        DateFormat(
+                                                                'yyyy-MM-dd – kk:mm')
+                                                            .format(commuter[
+                                                                    'ping_time']
+                                                                .toDate())
                                                             .toString() +
                                                         ')',
                                                     maxLines: 2,

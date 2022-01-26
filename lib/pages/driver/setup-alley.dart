@@ -36,8 +36,8 @@ class _SetupAlleyState extends State<SetupAlley> {
   var alley_state;
   var alleyList = [];
   //DateTime date = Timestamp.now().toDate();
-  String formattedDate =
-      DateFormat('yyyy-MM-dd – kk:mm').format(Timestamp.now().toDate());
+  //String formattedDate =
+  //  DateFormat('yyyy-MM-dd – kk:mm').format(Timestamp.now().toDate());
   final locate.Location location = locate.Location();
   StreamSubscription<locate.LocationData> _locationSubscription;
 
@@ -286,6 +286,16 @@ class _SetupAlleyState extends State<SetupAlley> {
                                 Container(
                                   child: Text(
                                     ' Driver: ${jeep["last_name"]}',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                Container(
+                                  child: Text(
+                                    "(" +
+                                        DateFormat('yyyy-MM-dd – kk:mm').format(
+                                            jeep["alley_time"].toDate()) +
+                                        ")",
                                     style:
                                         TextStyle(fontWeight: FontWeight.bold),
                                   ),
@@ -560,9 +570,8 @@ class _SetupAlleyState extends State<SetupAlley> {
                         if ((MyApp.clicked_forward == true ||
                                 MyApp.clicked_back == true) &&
                             MyApp.alley == false) {
-                          context
-                              .read<Authenticate>()
-                              .updateVehicleStatus(alley_state, formattedDate);
+                          context.read<Authenticate>().updateVehicleStatus(
+                              alley_state, Timestamp.now() /*formattedDate*/);
                         }
                         if (MyApp.clicked_forward == false &&
                             MyApp.clicked_back == false &&

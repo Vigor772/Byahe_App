@@ -41,9 +41,9 @@ class _MapState extends State<Map> {
   var cameraLat;
   var cameraLong;
   var driverLong;
-  //DateTime date = Timestamp.now().toDate();
-  String formattedDate =
-      DateFormat('yyyy-MM-dd – kk:mm').format(DateTime.now());
+  //DateTime dateNow = Timestamp.now().toDate();
+  String formattedDate;
+  //DateFormat('yyyy-MM-dd – kk:mm').format(DateTime.now());
   bool state = false;
   _MapState(this.routeData);
   StreamSubscription<QuerySnapshot> updateMarker;
@@ -123,7 +123,7 @@ class _MapState extends State<Map> {
     });
   }
 
-  routeDirection() async {
+  /*routeDirection() async {
     try {
       await FirebaseFirestore.instance
           .collection("subroutes")
@@ -139,9 +139,9 @@ class _MapState extends State<Map> {
     } catch (e) {
       return e.toString();
     }
-  }
+  }*/
 
-  void showrouteDirections(coords) async {
+  /*void showrouteDirections(coords) async {
     LatLng routepoint1 =
         LatLng(coords['point1'].latitude, coords['point1'].longitude);
     LatLng routepoint2 =
@@ -173,7 +173,7 @@ class _MapState extends State<Map> {
       color: Colors.red,
     );
     polylinestracker.add(drivertrack);
-  }
+  }*/
 
   void updateMarkerCommuter(
       locate.LocationData newLocalData, Uint8List imageData2) {
@@ -280,7 +280,7 @@ class _MapState extends State<Map> {
     fetchEmail();
     fetchCurrentUser();
     fetchPingStatus();
-    routeDirection();
+    //routeDirection();
   }
 
   @override
@@ -570,7 +570,12 @@ class _MapState extends State<Map> {
                                                           FontWeight.bold),
                                                 ),
                                                 Text(
-                                                  "${snapshot.data['alley_time']}",
+                                                  DateFormat(
+                                                          'yyyy-MM-dd – kk:mm')
+                                                      .format(snapshot
+                                                          .data['alley_time']
+                                                          .toDate())
+                                                      .toString(),
                                                   style: TextStyle(
                                                       fontSize: 10,
                                                       decoration: TextDecoration
@@ -694,14 +699,14 @@ class _MapState extends State<Map> {
                                                     setState(() {
                                                       savePing();
                                                       convertLatLng();
-                                                      getCoordinates();
+                                                      //getCoordinates();
                                                       //getCommuterLocation();
                                                       state = true;
                                                       context
                                                           .read<Authenticate>()
                                                           .updatePing(
                                                               routeData['uid'],
-                                                              formattedDate);
+                                                              Timestamp.now());
                                                       MyApp.ping = true;
                                                     });
                                                   }

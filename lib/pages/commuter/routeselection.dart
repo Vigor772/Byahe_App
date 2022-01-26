@@ -11,6 +11,7 @@ import 'package:location/location.dart';
 import 'package:location_platform_interface/location_platform_interface.dart';
 // ignore: implementation_imports
 import 'package:provider/src/provider.dart';
+import 'package:intl/intl.dart';
 
 // ignore: must_be_immutable
 class RouteSelection extends StatefulWidget {
@@ -163,26 +164,29 @@ class _RouteSelectionState extends State<RouteSelection> {
                                             builder: (context) =>
                                                 Map(routeListDetails[index])));
                                   },
-                                  title: Text(routeListDetails[index]['jeepney_route'],
+                                  title: Text(
+                                      routeListDetails[index]['jeepney_route'],
                                       style: TextStyle(color: Colors.white)),
                                   subtitle: Text(
                                       'Operator: ${routeListDetails[index]['last_name']}',
                                       style: TextStyle(color: Colors.white)),
                                   leading: Icon(Icons.directions_car,
                                       color: Colors.white),
-                                  trailing: (routeListDetails[index]['status'] == "ONLINE" &&
+                                  trailing: (routeListDetails[index]['status'] ==
+                                              "ONLINE" &&
                                           routeListDetails[index]['broadcast'] ==
                                               true)
                                       ? StreamBuilder(
-                                          stream: seatsAllocated = FirebaseFirestore.instance
+                                          stream: seatsAllocated = FirebaseFirestore
+                                              .instance
                                               .collection('users')
                                               .where('uid',
-                                                  isEqualTo: routeListDetails[index]
-                                                      ['uid'])
+                                                  isEqualTo:
+                                                      routeListDetails[index]
+                                                          ['uid'])
                                               .snapshots(),
                                           builder: (context,
-                                              AsyncSnapshot<QuerySnapshot>
-                                                  snapshot) {
+                                              AsyncSnapshot<QuerySnapshot> snapshot) {
                                             if (snapshot.hasError) {
                                               return Text(
                                                   'Failed to Retreive Info',
@@ -223,8 +227,11 @@ class _RouteSelectionState extends State<RouteSelection> {
                                                                   null)
                                                               ? Text(
                                                                   'Time Queued: ' +
-                                                                      values[
-                                                                          'alley_time'],
+                                                                      DateFormat(
+                                                                              'yyyy-MM-dd – kk:mm')
+                                                                          .format(values['alley_time']
+                                                                              .toDate())
+                                                                          .toString(),
                                                                   maxLines: 2,
                                                                   style: TextStyle(
                                                                       fontSize:
@@ -237,8 +244,7 @@ class _RouteSelectionState extends State<RouteSelection> {
                                                     )
                                                     .toList());
                                           })
-                                      : (routeListDetails[index]['status'] == 'ONLINE' &&
-                                              routeListDetails[index]['broadcast'] == false)
+                                      : (routeListDetails[index]['status'] == 'ONLINE' && routeListDetails[index]['broadcast'] == false)
                                           ? (routeListDetails[index]['alley_time'] != null)
                                               ? Column(
                                                   crossAxisAlignment:
@@ -254,10 +260,22 @@ class _RouteSelectionState extends State<RouteSelection> {
                                                             color:
                                                                 Colors.white)),
                                                     Text(
+                                                        routeListDetails[index]
+                                                            ['vehicle_status'],
+                                                        style: TextStyle(
+                                                            fontSize: 10.5,
+                                                            color:
+                                                                Colors.white)),
+                                                    Text(
                                                         'Time Queued: ' +
-                                                            routeListDetails[
-                                                                    index]
-                                                                ['alley_time'],
+                                                            DateFormat(
+                                                                    'yyyy-MM-dd – kk:mm')
+                                                                .format(routeListDetails[
+                                                                            index]
+                                                                        [
+                                                                        'alley_time']
+                                                                    .toDate())
+                                                                .toString(),
                                                         maxLines: 2,
                                                         style: TextStyle(
                                                             fontSize: 10,

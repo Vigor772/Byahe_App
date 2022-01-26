@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:byahe_app/widgets/driver/navigationalcontainer.dart';
 // ignore: implementation_imports
 import 'package:provider/src/provider.dart';
+import 'package:intl/intl.dart';
 
 class Reserve extends StatefulWidget {
   // const Reserve({ Key? key }) : super(key: key);
@@ -114,6 +115,7 @@ class _ReserveState extends State<Reserve> {
                   stream: booking = FirebaseFirestore.instance
                       .collection('bookings')
                       .where('plate_reference', isEqualTo: platenum)
+                      .orderBy('date_applied', descending: false)
                       .snapshots(),
                   builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                     if (snapshot.hasError) {
@@ -269,8 +271,11 @@ class _ReserveState extends State<Reserve> {
                                                       child: Text(
                                                         info['customer_name'] +
                                                             ' ' +
-                                                            info[
-                                                                'date_to_reserve'],
+                                                            DateFormat()
+                                                                .format(info[
+                                                                        'date_applied']
+                                                                    .toDate())
+                                                                .toString(),
                                                         maxLines: 2,
                                                         style: TextStyle(
                                                             fontWeight:

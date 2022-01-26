@@ -376,6 +376,7 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
                               .collection('bookings')
                               .doc(fnamePlate)
                               .set({
+                            'date_applied': Timestamp.now(),
                             'applicant_reference': useruid,
                             'status': status,
                             'plate_reference': vehicle_plate,
