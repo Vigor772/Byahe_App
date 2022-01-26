@@ -222,7 +222,7 @@ class _RouteSelectionState extends State<RouteSelection> {
                                                           (values['alley_time'] !=
                                                                   null)
                                                               ? Text(
-                                                                  'Alley Time: ' +
+                                                                  'Time Queued: ' +
                                                                       values[
                                                                           'alley_time'],
                                                                   maxLines: 2,
