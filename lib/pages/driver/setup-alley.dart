@@ -14,6 +14,7 @@ import 'package:byahe_app/pages/login_auth.dart';
 import 'package:provider/src/provider.dart';
 import 'package:location/location.dart' as locate;
 import 'package:permission_handler/permission_handler.dart';
+import 'package:intl/intl.dart';
 
 class SetupAlley extends StatefulWidget {
   // const SetupAlley({ Key? key }) : super(key: key);
@@ -34,6 +35,9 @@ class _SetupAlleyState extends State<SetupAlley> {
   var vehicleStatus;
   var alley_state;
   var alleyList = [];
+  //DateTime date = Timestamp.now().toDate();
+  String formattedDate =
+      DateFormat('yyyy-MM-dd – kk:mm').format(Timestamp.now().toDate());
   final locate.Location location = locate.Location();
   StreamSubscription<locate.LocationData> _locationSubscription;
 
@@ -556,8 +560,9 @@ class _SetupAlleyState extends State<SetupAlley> {
                         if ((MyApp.clicked_forward == true ||
                                 MyApp.clicked_back == true) &&
                             MyApp.alley == false) {
-                          context.read<Authenticate>().updateVehicleStatus(
-                              alley_state, Timestamp.now());
+                          context
+                              .read<Authenticate>()
+                              .updateVehicleStatus(alley_state, formattedDate);
                         }
                         if (MyApp.clicked_forward == false &&
                             MyApp.clicked_back == false &&

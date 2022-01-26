@@ -518,24 +518,69 @@ class _MapState extends State<Map> {
                                           ),
                                         ],
                                       )),
-                                      Container(
-                                          child: Row(children: <Widget>[
-                                        Text(
-                                          "Vehicle Plate Number: ",
-                                          style: TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        Text(
-                                          "${snapshot.data['vehicle_plate_number']}",
-                                          style: TextStyle(
-                                              fontSize: 10,
-                                              decoration:
-                                                  TextDecoration.underline,
-                                              color: Colors.green,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                      ]))
+                                      (snapshot.data['alley_time'] == null)
+                                          ? Container(
+                                              child: Row(children: <Widget>[
+                                              Text(
+                                                "Vehicle Plate Number: ",
+                                                style: TextStyle(
+                                                    fontSize: 10,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              Text(
+                                                "${snapshot.data['vehicle_plate_number']}",
+                                                style: TextStyle(
+                                                    fontSize: 10,
+                                                    decoration: TextDecoration
+                                                        .underline,
+                                                    color: Colors.green,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                            ]))
+                                          : Column(children: [
+                                              Container(
+                                                  child: Row(children: <Widget>[
+                                                Text(
+                                                  "Vehicle Plate Number: ",
+                                                  style: TextStyle(
+                                                      fontSize: 10,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                Text(
+                                                  "${snapshot.data['vehicle_plate_number']}",
+                                                  style: TextStyle(
+                                                      fontSize: 10,
+                                                      decoration: TextDecoration
+                                                          .underline,
+                                                      color: Colors.green,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                              ])),
+                                              Container(
+                                                  child: Row(children: <Widget>[
+                                                Text(
+                                                  "Time Queued: ",
+                                                  style: TextStyle(
+                                                      fontSize: 10,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                Text(
+                                                  "${snapshot.data['alley_time']}",
+                                                  style: TextStyle(
+                                                      fontSize: 10,
+                                                      decoration: TextDecoration
+                                                          .underline,
+                                                      color: Colors.green,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                              ]))
+                                            ])
                                     ],
                                   ),
                                   Row(
@@ -546,7 +591,7 @@ class _MapState extends State<Map> {
                                             child: Row(
                                           children: <Widget>[
                                             Text(
-                                              "Seats availability : ",
+                                              "Seats Occupied : ",
                                               style: TextStyle(
                                                   fontSize: 10,
                                                   fontWeight: FontWeight.bold),

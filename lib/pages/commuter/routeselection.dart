@@ -114,119 +114,159 @@ class _RouteSelectionState extends State<RouteSelection> {
                           return new Card(
                               color: Colors.yellow[700],
                               child: new ListTile(
-                                onTap: () async {
-                                  if (routeListDetails[index]['status'] ==
-                                      'OFFLINE') {
-                                    return showDialog<void>(
-                                        context: context,
-                                        barrierDismissible: false,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            title:
-                                                Text("Can't retrieve location"),
-                                            content: Text('User Offline'),
-                                            actions: <Widget>[
-                                              ElevatedButton(
-                                                  child: Text("CLOSE"),
-                                                  onPressed: () {
-                                                    Navigator.of(context).pop();
-                                                  })
-                                            ],
-                                          );
-                                        });
-                                  }
-                                  if (routeListDetails[index]['broadcast'] ==
-                                      false) {
-                                    return showDialog<void>(
-                                        context: context,
-                                        barrierDismissible: false,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            title: Text("User is online"),
-                                            content: Text(
-                                                'But live location is turned off'),
-                                            actions: <Widget>[
-                                              ElevatedButton(
-                                                  child: Text("CLOSE"),
-                                                  onPressed: () {
-                                                    Navigator.of(context).pop();
-                                                  })
-                                            ],
-                                          );
-                                        });
-                                  }
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              Map(routeListDetails[index])));
-                                },
-                                title: Text(
-                                    routeListDetails[index]['jeepney_route'],
-                                    style: TextStyle(color: Colors.white)),
-                                subtitle: Text(
-                                    'Operator: ${routeListDetails[index]['last_name']}',
-                                    style: TextStyle(color: Colors.white)),
-                                leading: Icon(Icons.directions_car,
-                                    color: Colors.white),
-                                trailing: (routeListDetails[index]['status'] ==
-                                            "ONLINE" &&
-                                        routeListDetails[index]['broadcast'] ==
-                                            true)
-                                    ? StreamBuilder(
-                                        stream: seatsAllocated =
-                                            FirebaseFirestore.instance
-                                                .collection('users')
-                                                .where('uid',
-                                                    isEqualTo:
+                                  onTap: () async {
+                                    if (routeListDetails[index]['status'] ==
+                                        'OFFLINE') {
+                                      return showDialog<void>(
+                                          context: context,
+                                          barrierDismissible: false,
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                              title: Text(
+                                                  "Can't retrieve location"),
+                                              content: Text('User Offline'),
+                                              actions: <Widget>[
+                                                ElevatedButton(
+                                                    child: Text("CLOSE"),
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    })
+                                              ],
+                                            );
+                                          });
+                                    }
+                                    if (routeListDetails[index]['broadcast'] ==
+                                        false) {
+                                      return showDialog<void>(
+                                          context: context,
+                                          barrierDismissible: false,
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                              title: Text("User is online"),
+                                              content: Text(
+                                                  'But live location is turned off'),
+                                              actions: <Widget>[
+                                                ElevatedButton(
+                                                    child: Text("CLOSE"),
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    })
+                                              ],
+                                            );
+                                          });
+                                    }
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                Map(routeListDetails[index])));
+                                  },
+                                  title: Text(routeListDetails[index]['jeepney_route'],
+                                      style: TextStyle(color: Colors.white)),
+                                  subtitle: Text(
+                                      'Operator: ${routeListDetails[index]['last_name']}',
+                                      style: TextStyle(color: Colors.white)),
+                                  leading: Icon(Icons.directions_car,
+                                      color: Colors.white),
+                                  trailing: (routeListDetails[index]['status'] == "ONLINE" &&
+                                          routeListDetails[index]['broadcast'] ==
+                                              true)
+                                      ? StreamBuilder(
+                                          stream: seatsAllocated = FirebaseFirestore.instance
+                                              .collection('users')
+                                              .where('uid',
+                                                  isEqualTo: routeListDetails[index]
+                                                      ['uid'])
+                                              .snapshots(),
+                                          builder: (context,
+                                              AsyncSnapshot<QuerySnapshot>
+                                                  snapshot) {
+                                            if (snapshot.hasError) {
+                                              return Text(
+                                                  'Failed to Retreive Info',
+                                                  style: TextStyle(
+                                                      color: Colors.white));
+                                            }
+                                            if (snapshot.hasData == false) {
+                                              return CircularProgressIndicator();
+                                            }
+                                            return Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: snapshot.data.docs
+                                                    .map(
+                                                      (values) => Column(
+                                                        children: [
+                                                          Text(
+                                                              values['current_occupied']
+                                                                      .toString() +
+                                                                  '/' +
+                                                                  values['seats_avail']
+                                                                      .toString(),
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      11.5,
+                                                                  color: Colors
+                                                                      .white)),
+                                                          Text(
+                                                              values[
+                                                                  'vehicle_status'],
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      10.5,
+                                                                  color: Colors
+                                                                      .white)),
+                                                          (values['alley_time'] !=
+                                                                  null)
+                                                              ? Text(
+                                                                  'Alley Time: ' +
+                                                                      values[
+                                                                          'alley_time'],
+                                                                  maxLines: 2,
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          10,
+                                                                      color: Colors
+                                                                          .white))
+                                                              : Text('')
+                                                        ],
+                                                      ),
+                                                    )
+                                                    .toList());
+                                          })
+                                      : (routeListDetails[index]['status'] == 'ONLINE' &&
+                                              routeListDetails[index]['broadcast'] == false)
+                                          ? (routeListDetails[index]['alley_time'] != null)
+                                              ? Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Text(
                                                         routeListDetails[index]
-                                                            ['uid'])
-                                                .snapshots(),
-                                        builder: (context,
-                                            AsyncSnapshot<QuerySnapshot>
-                                                snapshot) {
-                                          if (snapshot.hasError) {
-                                            return Text(
-                                                'Failed to Retreive Info',
-                                                style: TextStyle(
-                                                    color: Colors.white));
-                                          }
-                                          if (snapshot.hasData == false) {
-                                            return CircularProgressIndicator();
-                                          }
-                                          return Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: snapshot.data.docs
-                                                  .map(
-                                                    (values) => Column(
-                                                      children: [
-                                                        Text(
-                                                            values['current_occupied']
-                                                                    .toString() +
-                                                                '/' +
-                                                                values['seats_avail']
-                                                                    .toString(),
-                                                            style: TextStyle(
-                                                                fontSize: 11.5,
-                                                                color: Colors
-                                                                    .white)),
-                                                        Text(
-                                                            values[
-                                                                'vehicle_status'],
-                                                            style: TextStyle(
-                                                                fontSize: 10.5,
-                                                                color: Colors
-                                                                    .white))
-                                                      ],
-                                                    ),
-                                                  )
-                                                  .toList());
-                                        })
-                                    : Text(routeListDetails[index]['status'],
-                                        style: TextStyle(color: Colors.white)),
-                              ));
+                                                            ['status'],
+                                                        style: TextStyle(
+                                                            fontSize: 10.5,
+                                                            color:
+                                                                Colors.white)),
+                                                    Text(
+                                                        'Time Queued: ' +
+                                                            routeListDetails[
+                                                                    index]
+                                                                ['alley_time'],
+                                                        maxLines: 2,
+                                                        style: TextStyle(
+                                                            fontSize: 10,
+                                                            color:
+                                                                Colors.white))
+                                                  ],
+                                                )
+                                              : Text(routeListDetails[index]['status'], style: TextStyle(color: Colors.white))
+                                          : Text(routeListDetails[index]['status'], style: TextStyle(color: Colors.white))));
                         }),
                   )
                 ],
