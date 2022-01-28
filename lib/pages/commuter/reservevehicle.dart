@@ -29,6 +29,7 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
   TextEditingController numpassController = TextEditingController();
   TextEditingController dateCtlController = TextEditingController();
   String useruid = FirebaseAuth.instance.currentUser.uid;
+  var timenow = Timestamp.now();
   var commuterName;
   DateTime selectedDate = DateTime.now();
   List category = [
@@ -363,9 +364,11 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
                         var vehicle_plate;
                         var drivername;
                         var fnamePlate;
+                        var fnameTime;
                         drivername = routeData['last_name'];
                         vehicle_plate = routeData['vehicle_plate_number'];
                         fnamePlate = (fname + vehicle_plate).trim();
+                        fnameTime = (fname + timenow.toString()).trim();
                         var status = 'Pending';
                         context
                             .read<Authenticate>()
@@ -374,9 +377,9 @@ class _ReserveVehicleState extends State<ReserveVehicle> {
                           User user = FirebaseAuth.instance.currentUser;
                           await FirebaseFirestore.instance
                               .collection('bookings')
-                              .doc(fnamePlate)
+                              .doc(fnameTime /*fnamePlate*/)
                               .set({
-                            'date_applied': Timestamp.now(),
+                            'date_applied': timenow, //Timestamp.now(),
                             'applicant_reference': useruid,
                             'status': status,
                             'plate_reference': vehicle_plate,

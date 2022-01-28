@@ -417,9 +417,11 @@ class _ReserveDetailsState extends State<ReserveDetails> {
                                                                   .read<
                                                                       Authenticate>()
                                                                   .respondBooking(
-                                                                      fnamePlate =
-                                                                          info['customer_name'] +
-                                                                              info['plate_reference'],
+                                                                      fnamePlate = info[
+                                                                              'customer_name'] +
+                                                                          info['date_applied']
+                                                                              .toString(),
+                                                                      //info['plate_reference'],
                                                                       response);
                                                             });
                                                           }

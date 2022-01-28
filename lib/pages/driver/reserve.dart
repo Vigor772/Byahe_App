@@ -292,17 +292,20 @@ class _ReserveState extends State<Reserve> {
                                                                   InkWell(
                                                                     onTap: () {
                                                                       var fnamePlate;
+                                                                      var fnameTime;
                                                                       var response =
                                                                           'Accepted';
                                                                       fnamePlate =
                                                                           info['customer_name'] +
                                                                               info['plate_reference'];
-                                                                      context
-                                                                          .read<
-                                                                              Authenticate>()
-                                                                          .respondBooking(
-                                                                              fnamePlate,
-                                                                              response);
+                                                                      fnameTime = info[
+                                                                              'customer_name'] +
+                                                                          info['date_applied']
+                                                                              .toString();
+                                                                      context.read<Authenticate>().respondBooking(
+                                                                          fnameTime,
+                                                                          //fnamePlate,
+                                                                          response);
                                                                       /*setState(() {
                                                               accepted = true;
                                                               rejected = false;
@@ -330,17 +333,20 @@ class _ReserveState extends State<Reserve> {
                                                                   InkWell(
                                                                     onTap: () {
                                                                       var fnamePlate;
+                                                                      var fnameTime;
                                                                       var response =
                                                                           'Rejected';
                                                                       fnamePlate =
                                                                           info['customer_name'] +
                                                                               info['plate_reference'];
-                                                                      context
-                                                                          .read<
-                                                                              Authenticate>()
-                                                                          .respondBooking(
-                                                                              fnamePlate,
-                                                                              response);
+                                                                      fnameTime = info[
+                                                                              'customer_name'] +
+                                                                          info['date_applied']
+                                                                              .toString();
+                                                                      context.read<Authenticate>().respondBooking(
+                                                                          fnameTime,
+                                                                          //fnamePlate,
+                                                                          response);
                                                                       /*setState(() {
                                                               rejected = true;
                                                               accepted = false;

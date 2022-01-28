@@ -225,6 +225,16 @@ class _SetupAlleyState extends State<SetupAlley> {
                                     style:
                                         TextStyle(fontWeight: FontWeight.bold),
                                   ),
+                                ),
+                                Container(
+                                  child: Text(
+                                    "(" +
+                                        DateFormat('yyyy-MM-dd – kk:mm').format(
+                                            jeep["alley_time"].toDate()) +
+                                        ")",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
                                 )
                               ]),
                               Container(
