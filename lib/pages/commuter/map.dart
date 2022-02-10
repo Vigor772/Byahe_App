@@ -13,6 +13,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart' as locate;
 import 'package:provider/src/provider.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 // ignore: implementation_imports
 
@@ -47,6 +48,7 @@ class _MapState extends State<Map> {
   bool state = false;
   _MapState(this.routeData);
   StreamSubscription<QuerySnapshot> updateMarker;
+  StreamSubscription<QuerySnapshot> notifyCommuter;
   StreamSubscription<QuerySnapshot> cameraChange;
   StreamSubscription _locationSubscription;
   locate.Location _locationTracker = locate.Location();
@@ -61,6 +63,7 @@ class _MapState extends State<Map> {
   List<PolylineWayPoint> waypoints = [];
   Circle circle;
   String apiKey = "AIzaSyC1MT12YRBBuDYKd1SMvFLOyiRM-PPE-wU";
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
   Future<Uint8List> getMarker() async {
     ByteData byteData =
@@ -281,6 +284,67 @@ class _MapState extends State<Map> {
     fetchCurrentUser();
     fetchPingStatus();
     //routeDirection();
+    var initializationSettingAndroid =
+        new AndroidInitializationSettings('ic_launcher');
+    var initializationSettings =
+        new InitializationSettings(android: initializationSettingAndroid);
+    flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
+    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: onSelectnotification);
+    if (useruid != routeData['uid']) {
+      notifyCommuter = FirebaseFirestore.instance
+          .collection('users')
+          .where('uid', isEqualTo: useruid)
+          .snapshots()
+          .listen((query) {
+        query.docChanges.forEach((element) {
+          if (element.type == DocumentChangeType.added ||
+              element.type == DocumentChangeType.modified) {
+            if (element.doc.data()['ping_status'] != 'Cancelled' &&
+                element.doc.data()['ping_status'] != 'Pending' &&
+                element.doc.data()['ping_status'] != null) {
+              alertCommuter();
+            }
+          }
+        });
+      });
+    }
+  }
+
+  Future onSelectnotification(String payload) async {
+    showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+              title: const Text('Driver Responded'),
+              content: Text(payload),
+              actions: <Widget>[
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (context) => Map(routeData)));
+                    },
+                    child: Text('OK'))
+              ],
+            ));
+  }
+
+  Future alertCommuter() async {
+    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+        "driver response", "onboard or reject",
+        channelDescription: "notify commuter when responded",
+        enableVibration: true,
+        playSound: true,
+        importance: Importance.max,
+        priority: Priority.high);
+    NotificationDetails platformChannelSpecifics =
+        new NotificationDetails(android: androidPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      "Driver Responded To Ping",
+      "View or Refresh Map to see the response",
+      platformChannelSpecifics,
+      payload: "Refresh Map",
+    );
   }
 
   @override
