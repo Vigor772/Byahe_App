@@ -1,6 +1,6 @@
 # Byahe_App
 
-A new Flutter project.
+A Vehicle Monitoring Mobile Application
 
 ## Getting Started
 
